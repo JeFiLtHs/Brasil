@@ -28,7 +28,7 @@ var langShinko = [
     "Select categories to use",
     "When do you want your scav runs to return (approximately)?",
     "Runtime here",
-    "Calculate runtimes for each page",
+    "Calcule tempos de execução para cada página",
     "Creator: ",
     "Mass scavenging: send per 50 villages",
     "Launch group "
