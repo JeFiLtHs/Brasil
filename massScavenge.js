@@ -104,6 +104,20 @@ if (game_data.locale == "it_IT") {
         "Lancia gruppo"
     ]
 }
+if (game_data.locale == "pt_BR") {
+    //portuguese brazil server
+    langShinko = [
+        "Saques em massa",
+        "Selecione os tipos de unidades/ORDENS para saquear (arraste as unidades para ordenar)",
+        "Selecione as categorias a serem usadas",
+        "Quando você quer que suas tropas de saque retornem (aproximadamente)?",
+        "Tempo de execução aqui",
+        "Calcule os tempos de execução para cada página",
+        "Criador: ",
+        "Saques em massa: envie por 50 aldeias",
+        "Lançar grupo"
+    ]
+}
 
 //loading settings
 
