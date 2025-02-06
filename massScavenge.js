@@ -23,15 +23,15 @@ if (typeof version == 'undefined') {
 
 //set translations
 var langShinko = [
-    "Mass scavenging",
-    "Select unit types/ORDER to scavenge with (drag units to order)",
-    "Select categories to use",
-    "When do you want your scav runs to return (approximately)?",
-    "Runtime here",
-    "Calcule tempos de execução para cada página",
-    "Creator: ",
-    "Mass scavenging: send per 50 villages",
-    "Launch group "
+"Coleta em massa",
+"Selecione os tipos de unidades/ORDEM para coletar (arraste as unidades para ordenar)",
+"Selecione as categorias a serem usadas",
+"Quando você quer que suas coletas retornem (aproximadamente)?",
+"Tempo de execução aqui",
+"Calcule os tempos de execução para cada página",
+"Criador: ",
+"Coleta em massa: enviar por 50 aldeias",
+"Grupo de lançamento"
 ]
 
 if (game_data.locale == "ro_RO") {
