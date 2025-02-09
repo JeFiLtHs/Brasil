@@ -1421,28 +1421,6 @@ function selectType(type) {
     console.log("Clicando automaticamente no botão 'Calculate runtimes for each page'...");
     $("input[value='Calculate runtimes for each page']").click(); 
 }, 15000); // 15 segundos (15000 milissegundos)
-    setTimeout(function() {
-    console.log("Iniciando clique automático nos botões 'Launch group'...");
-
-    let buttons = $("input[value^='Launch group']"); // Seleciona todos os botões que começam com "Launch group"
-    let index = 0;
-
-    function clickNextButton() {
-        if (index < buttons.length) {
-            console.log(`Clicando automaticamente no botão: ${buttons[index].value}`);
-            buttons[index].click(); // Simula o clique
-            index++;
-
-            setTimeout(clickNextButton, 30000); // Aguarda 2 segundos antes do próximo clique
-        } else {
-            console.log("Todos os grupos foram lançados automaticamente!");
-        }
-    }
-
-    clickNextButton(); // Inicia a automação
-}, 16000); // Aguarda 16 segundos para garantir que os cálculos já foram feitos
-    
-    
 }
 /* This is some notes just for me so I know what I'm working with data wise
 
