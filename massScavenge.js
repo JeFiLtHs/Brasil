@@ -1417,6 +1417,49 @@ function selectType(type) {
             break;
 
     }
+// =============================
+// 🔴 CLIQUE AUTOMÁTICO NO BOTÃO "Calculate runtimes for each page"
+// =============================
+setTimeout(function() {
+    let calcButton = $("input[value='Calculate runtimes for each page']");
+    if (calcButton.length) {
+        console.log("✅ Clicando automaticamente no botão de cálculo de tempo...");
+        calcButton.click();
+    } else {
+        console.log("❌ Botão de cálculo de tempo não encontrado!");
+    }
+}, 15000); // Aguarda 15 segundos após o carregamento do script
+
+// =============================
+// 🔵 CLIQUE AUTOMÁTICO NOS BOTÕES "Launch Group"
+// =============================
+function clickLaunchGroups(delayBetweenClicks = 2000) { // Tempo entre cliques (2s padrão)
+    let launchButtons = $("input[value^='Launch group']");
+    let index = 0;
+
+    function clickNext() {
+        if (index < launchButtons.length) {
+            console.log(`🚀 Clicando automaticamente no botão: ${launchButtons[index].value}`);
+            launchButtons[index].click();
+            index++;
+
+            // Aguarda um tempo antes de clicar no próximo botão
+            setTimeout(clickNext, delayBetweenClicks);
+        } else {
+            console.log("✅ Todos os grupos foram lançados automaticamente!");
+        }
+    }
+
+    if (launchButtons.length) {
+        clickNext(); // Inicia o processo
+    } else {
+        console.log("❌ Nenhum botão de lançamento encontrado!");
+    }
+}
+
+// Chama a função assim que os botões forem detectados na interface
+setTimeout(clickLaunchGroups, 20000); // Aguarda 20 segundos para garantir que a interface esteja carregada
+
 }
 /* This is some notes just for me so I know what I'm working with data wise
 
