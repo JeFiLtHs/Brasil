@@ -1444,14 +1444,9 @@ function clickLaunchGroups(autoDelay = 3000) { // Tempo entre cliques (3s padrã
             console.log("Todos os grupos foram lançados automaticamente!");
         }
     }
-
-    clickNext(); // Inicia o processo
 }
 
-// Aguarda 10 segundos após carregar o script para começar os cliques nos botões
-setTimeout(clickLaunchGroups, 10000);
-
-}
+// Aguarda 10 segundos após carrega}
 /* This is some notes just for me so I know what I'm working with data wise
 
 Structure of the array:
