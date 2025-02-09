@@ -1421,7 +1421,6 @@ function selectType(type) {
     console.log("Clicando automaticamente no botão 'Calculate runtimes for each page'...");
     $("input[value='Calculate runtimes for each page']").click(); 
 }, 15000); // 15 segundos (15000 milissegundos)
-}
 function clickLaunchGroups(autoDelay = 3000) { // Tempo entre cliques (3s padrão)
     let launchButtons = $("input[value^='Launch group']"); // Seleciona todos os botões que começam com "Launch group"
 
