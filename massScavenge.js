@@ -1417,12 +1417,12 @@ function selectType(type) {
             break;
 
     }
-}
-setTimeout(function() {
+    setTimeout(function() {
     console.log("Clicando automaticamente no botão 'Calculate runtimes for each page'...");
     $("input[value='Calculate runtimes for each page']").click(); 
 }, 15000); // 15 segundos (15000 milissegundos)
-                    
+    
+}
 /* This is some notes just for me so I know what I'm working with data wise
 
 Structure of the array:
