@@ -1417,9 +1417,6 @@ function selectType(type) {
             break;
 
     }
-// =============================
-// 🔴 CLIQUE AUTOMÁTICO NO BOTÃO "Calculate runtimes for each page"
-// =============================
 setTimeout(function() {
     let calcButton = $("input[value='Calculate runtimes for each page']");
     if (calcButton.length) {
@@ -1430,10 +1427,7 @@ setTimeout(function() {
     }
 }, 15000); // Aguarda 15 segundos após o carregamento do script
 
-// =============================
-// 🔵 CLIQUE AUTOMÁTICO NOS BOTÕES "Launch Group"
-// =============================
-function clickLaunchGroups(delayBetweenClicks = 2000) { // Tempo entre cliques (2s padrão)
+    function clickLaunchGroups(delayBetweenClicks = 2000) { // Tempo entre cliques (2s padrão)
     let launchButtons = $("input[value^='Launch group']");
     let index = 0;
 
