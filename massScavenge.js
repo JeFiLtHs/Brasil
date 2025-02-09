@@ -562,6 +562,348 @@ else {
 
 
 //adding UI classes to page
+// Adicione este código após a linha 565
+$("#contentContainer").eq(0).prepend(cssClassesSophie);
+$("#mobileHeader").eq(0).prepend(cssClassesSophie);
+
+//first UI, will always open as soon as you run the script.
+html = `
+<div id="massScavengeSophie" class="ui-widget-content" style="width:600px;background-color:${backgroundColor};cursor:move;z-index:50;">
+<button class="btn" id ="cog" onclick="settings()">⚙️</button>
+<button class="btn" id = "x" onclick="closeWindow('massScavengeSophie')">
+            X
+        </button>
+    <table id="massScavengeSophieTable" class="vis" border="1" style="width: 100%;background-color:${backgroundColor};border-color:${borderColor}">
+        <tr>
+            <td colspan="10" id="massScavengeSophieTitle" style="text-align:center; width:auto; background-color:${headerColor}">
+                <h3>
+                    <center style="margin:10px"><u>
+                            <font color="${titleColor}">${langShinko[0]}</font>
+                        </u>
+                    </center>
+                </h3>
+            </td>
+        </tr>
+        <tr style="background-color:${backgroundColor}">
+            <td style="text-align:center;background-color:${headerColor}" colspan="15">
+                <h3>
+                    <center style="margin:10px"><u>
+                            <font color="${titleColor}">${langShinko[1]}</font>
+                        </u></center>
+                </h3>
+            </td>
+        </tr>
+        <tr id="imgRow">
+        </tr>
+    </table>
+    <hr>
+    <table class="vis" border="1" style="width: 100%;background-color:${backgroundColor};border-color:${borderColor}">
+        <tbody>
+            <tr style="background-color:${backgroundColor}">
+                <td style="text-align:center;background-color:${headerColor}" colspan="4">
+                    <h3>
+                        <center style="margin:10px"><u>
+                                <font color="${titleColor}">${langShinko[2]}</font>
+                            </u></center>
+                    </h3>
+                </td>
+            </tr>
+            <tr id="categories" style="text-align:center; width:auto; background-color:${headerColor}">
+                <td style="text-align:center; width:auto; background-color:${headerColor};padding: 10px;">
+                    <font color="${titleColor}">${categoryNames[1].name}</font>
+                </td>
+                <td style="text-align:center; width:auto; background-color:${headerColor};padding: 10px;">
+                    <font color="${titleColor}">${categoryNames[2].name}</font>
+                </td>
+                <td style="text-align:center; width:auto; background-color:${headerColor};padding: 10px;">
+                    <font color="${titleColor}">${categoryNames[3].name}</font>
+                </td>
+                <td style="text-align:center; width:auto; background-color:${headerColor};padding: 10px;">
+                    <font color="${titleColor}">${categoryNames[4].name}</font>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:center; width:auto; background-color:${backgroundColor}">
+                    <center><input type="checkbox" ID="category1" name="cat1"></center>
+                </td>
+                <td style="text-align:center; width:auto; background-color:${backgroundColor}">
+                    <center><input type="checkbox" ID="category2" name="cat2"></center>
+                </td>
+                <td style="text-align:center; width:auto; background-color:${backgroundColor}">
+                    <center><input type="checkbox" ID="category3" name="cat3"></center>
+                </td>
+                <td style="text-align:center; width:auto; background-color:${backgroundColor}">
+                    <center><input type="checkbox" ID="category4" name="cat4"></center>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <hr>
+    <table class="vis" border="1" style="width: 100%;background-color:${backgroundColor};border-color:${borderColor}">
+        <tr id="runtimesTitle" style="text-align:center; width:auto; background-color:${headerColor}">
+            <td colspan="3" style="text-align:center; width:auto; background-color:${headerColor}">
+                <center style="margin:10px">
+                    <font color="${titleColor}">${langShinko[3]}</font>
+                </center>
+            </td>
+        </tr>
+        <tr id="runtimes" style="text-align:center; width:auto; background-color:${headerColor}">
+            <td style="background-color:${headerColor};"></td>
+            <td style="text-align:center; width:auto; background-color:${headerColor};padding: 10px;">
+                <font color="${titleColor}">Off villages</font>
+            </td>
+            <td style="text-align:center; width:auto; background-color:${headerColor};padding: 10px;">
+                <font color="${titleColor}">Def villages</font>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:22px;background-color:${backgroundColor}; padding:5px;"><input type="radio" ID="timeSelectorDate" name="timeSelector" ></td>
+            <td style="text-align:center; width:auto; background-color:${backgroundColor}; padding:5px;"><input type="date" id="offDay" name="offDay" value="${setDayToField(runTimes.off)}"><input type[...]
+            <td style="text-align:center; width:auto; background-color:${backgroundColor}; padding:5px;"><input type="date" id="defDay" name="defDay" value="${setDayToField(runTimes.def)}"><input type[...]
+        </tr>
+        <tr>
+            <td style="width:22px;background-color:${backgroundColor}; padding:5px;"><input type="radio" ID="timeSelectorHours" name="timeSelector" ></td>
+            <td style="text-align:center; width:auto; background-color:${backgroundColor}; padding:5px;"><input type="text" class="runTime_off" style="background-color:${backgroundColor};color:${title[...]
+            <td style="text-align:center; width:auto; background-color:${backgroundColor}; padding:5px;"><input type="text" class="runTime_def" style="background-color:${backgroundColor};color:${title[...]
+        </tr>
+        <tr>
+            <td style="width:22px;background-color:${backgroundColor}; padding:5px;"></td>
+            <td style="text-align:center; width:auto; background-color:${backgroundColor}; padding:5px;"><font color="${titleColor}"><span id="offDisplay"></span></font></td>
+            <td style="text-align:center; width:auto; background-color:${backgroundColor}; padding:5px;"><font color="${titleColor}"><span id="defDisplay"></span></font></td>
+        </tr>
+        </tr>
+    </table>
+    <hr>
+    <table class="vis" border="1" style="width: 100%;background-color:${backgroundColor};border-color:${borderColor}">
+        <tr id="settingPriorityTitle" style="text-align:center; width:auto; background-color:${headerColor}">
+            <td colspan="2" style="text-align:center; width:auto; background-color:${headerColor}">
+                <center style="margin:10px">
+                    <font color="${titleColor}">${"Which setting?"}</font>
+                </center>
+            </td>
+        </tr>
+        <tr id="settingPriorityHeader" style="text-align:center; width:auto; background-color:${headerColor}">
+            <td style="text-align:center; width:50%; background-color:${headerColor}; padding:5px;">
+                <font color="${titleColor}">Balanced over all categories</font>
+            </td>
+            <td style="text-align:center; width:50%; background-color:${headerColor}; padding:5px;">
+                <font color="${titleColor}">Priority on filling higher categories</font>
+            </td>
+        </tr>
+        <tr id="settingPriority" style="text-align:center; width:auto; background-color:${headerColor}">
+            <td style="text-align:center; width:50%; background-color:${backgroundColor}; padding:5px;"><input type="radio" ID="settingPriorityBalanced" name="prio"></td>
+            <td style="text-align:center; width:50%; background-color:${backgroundColor}; padding:5px;"><input type="radio" ID="settingPriorityPriority" name="prio"></td>
+        </tr>
+        <tr style="text-align:center; width:auto; background-color:${headerColor}">
+            <td style="text-align:center; width:50%; background-color:${backgroundColor}; padding:5px;"> <font color="${titleColor}">Settings bugged?</font></td>
+            <td style="text-align:center; width:50%; background-color:${backgroundColor}; padding:5px;"><center><input type="button" class="btn btnSophie" id="reset" onclick="resetSettings()" value="R[...]
+        </tr>
+    </table>
+    <hr>
+    <center><input type="button" class="btn btnSophie" id="sendMass" onclick="readyToSend()" value="${langShinko[5]}"></center>
+    <hr>
+    <center><img id="sophieImg" class=" tooltip-delayed" title="Sophie -Shinko to Kuma-" src="https://dl.dropboxusercontent.com/s/bxoyga8wa6yuuz4/sophie2.gif" style="cursor:help; position: relative"><[...]
+    <br>
+    <center>
+        <p>
+            <font color="${titleColor}">${langShinko[6]} </font><a href="https://shinko-to-kuma.my-free.website/" style="text-shadow:-1px -1px 0 ${titleColor},1px -1px 0 ${titleColor},-1px 1px 0 ${tit[...]
+        </p>
+    </center>
+</div>
+`;
+$(".maincell").eq(0).prepend(html);
+$("#mobileContent").eq(0).prepend(html);
+if (game_data.locale == "ar_AE") {
+    $("#sophieImg").attr("src", "https://media2.giphy.com/media/qYr8p3Dzbet5S/giphy.gif");
+}
+if (is_mobile == false) {
+    $("#massScavengeSophie").css("position", "fixed");
+    $("#massScavengeSophie").draggable();
+}
+
+// Automatiza o clique no botão "Calcular tempos de execução"
+setTimeout(function() {
+    $("#sendMass").click(); // Adiciona clique automatizado
+}, 1000); // Ajuste o tempo conforme necessário
+
+$("#offDisplay")[0].innerText = fancyTimeFormat(runTimes.off * 3600);
+$("#defDisplay")[0].innerText = fancyTimeFormat(runTimes.def * 3600);
+if (tempElementSelection == "Date") {
+    $(`#timeSelectorDate`).prop("checked", true);
+    selectType("Date");
+    updateTimers();
+}
+else {
+    $(`#timeSelectorHours`).prop("checked", true);
+    selectType("Hours");
+    updateTimers();
+}
+$("#offDay")[0].addEventListener("input", function () {
+    updateTimers();
+}, false)
+
+$("#defDay")[0].addEventListener("input", function () {
+    updateTimers();
+}, false)
+
+$("#offTime")[0].addEventListener("input", function () {
+    updateTimers();
+}, false)
+
+$("#defTime")[0].addEventListener("input", function () {
+    updateTimers();
+}, false)
+
+$(".runTime_off")[0].addEventListener("input", function () {
+    updateTimers();
+}, false)
+
+$(".runTime_def")[0].addEventListener("input", function () {
+    updateTimers();
+}, false)
+
+$("#timeSelectorDate")[0].addEventListener("input", function () {
+    selectType('Date');
+    updateTimers();
+}, false)
+
+$("#timeSelectorHours")[0].addEventListener("input", function () {
+    selectType('Hours');
+    updateTimers();
+}, false)
+
+//create checkboxes and add them to the UI
+
+for (var i = 0; i < sendOrder.length; i++) {
+
+    $("#imgRow").eq(0).append(`<td align="center" style="background-color:${backgroundColor}">
+    <table class="vis" border="1" style="width: 100%">
+    <thead>
+    </thead>
+    <tbody>    
+        <tr>
+            <td style=" text-align:center;background-color:${headerColor};padding: 5px;"><img src="https://dsen.innogamescdn.com/asset/cf2959e7/graphic/unit/unit_${sendOrder[i]}.png" title="${sendOrde[...]
+        </tr>
+        <tr>
+            <td align="center" style="background-color:${backgroundColor};padding: 5px;"><input type="checkbox" ID="${sendOrder[i]}" name="${sendOrder[i]}"></td>
+        </tr>
+        <tr>
+            <td style="text-align:center; width:auto; background-color:#202225;padding: 5px;"><font color="#ffffdf">Backup</font></td>
+        </tr>
+        <tr>
+            <td align="center" style="background-color:${backgroundColor};padding: 5px;"><input type="text" ID="${sendOrder[i]}Backup" name="${sendOrder[i]}" value="${keepHome[sendOrder[i]]}" siz[...]
+        </tr>
+        </tbody>  
+    </table>
+</td>`);
+    $("#imgRow").sortable({
+        axis: "x",
+        revert: 100,
+        containment: "parent",
+        forceHelperSize: true,
+        delay: 100,
+        scroll: false
+    }).disableSelection();
+
+    if (prioritiseHighCat == true) {
+        console.log('setting high priority cat')
+        $(`#settingPriorityPriority`).prop("checked", true);
+    }
+    else {
+        console.log('setting balanced')
+        $(`#settingPriorityBalanced`).prop("checked", true);
+    }
+
+    enableCorrectTroopTypes();
+}
+
+//focus calculate button!
+$("#sendMass").focus();
+
+function readyToSend() {
+
+    //check if every setting is chosen, otherwise alert and abort
+
+    if ($("#settingPriorityPriority")[0].checked == false && $("#settingPriorityBalanced")[0].checked == false) {
+        // no setting chosen
+        alert("You have not chosen how you want to split your troops! Choose either prioritising higher categories till chosen runtime, or balanced spread over all categories!");
+        throw Error("didn't choose type");
+    }
+
+    if ($("#category1").is(":checked") == false && $("#category2").is(":checked") == false && $("#category3").is(":checked") == false && $("#category4").is(":checked") == false) {
+        // no category chosen
+        alert("You have not chosen which categories you want to use!");
+        throw Error("didn't choose category");
+    }
+
+    //get trooptypes we wanna use, and runtime
+    console.log(sendOrder);
+    for (var i = 0; i < sendOrder.length; i++) {
+        troopTypeEnabled[sendOrder[i]] = $(`:checkbox#${sendOrder[i]}`).is(":checked");
+    }
+    for (var i = 0; i < sendOrder.length; i++) {
+        keepHome[sendOrder[i]] = $(`#${sendOrder[i]}Backup`).val();
+    }
+    console.log(troopTypeEnabled);
+    enabledCategories.push($("#category1").is(":checked"));
+    enabledCategories.push($("#category2").is(":checked"));
+    enabledCategories.push($("#category3").is(":checked"));
+    enabledCategories.push($("#category4").is(":checked"));
+
+    if ($("#timeSelectorDate")[0].checked == true) {
+        localStorage.setItem("timeElement", "Date");
+        time.off = Date.parse($("#offDay").val().replace(/-/g, "/") + " " + $("#offTime").val());
+        time.def = Date.parse($("#defDay").val().replace(/-/g, "/") + " " + $("#defTime").val());
+        time.off = (time.off - serverDate) / 1000 / 3600;
+        time.def = (time.def - serverDate) / 1000 / 3600;
+    }
+    else {
+        localStorage.setItem("timeElement", "Hours");
+        time.off = $('.runTime_off').val();
+        time.def = $('.runTime_def').val();
+    }
+
+    console.log("Time off: " + time.off);
+    console.log("Time def: " + time.def);
+    if (time.off > 24 || time.def > 24) {
+        alert("Your runtime is higher than 24h!");
+    }
+
+    console.log(sendOrder);
+    if ($("#settingPriorityPriority")[0].checked == true) {
+        prioritiseHighCat = true;
+    }
+    else {
+        prioritiseHighCat = false;
+    }
+
+    sendOrder = [];
+    for (var k = 0; k < $("#imgRow :checkbox").length; k++) {
+        sendOrder.push($("#imgRow :checkbox")[k].name)
+    }
+
+    console.log("Runtimes: Off: " + time.off + " Def: " + time.def);
+    localStorage.setItem("troopTypeEnabled", JSON.stringify(troopTypeEnabled));
+    localStorage.setItem("keepHome", JSON.stringify(keepHome));
+    localStorage.setItem("categoryEnabled", JSON.stringify(enabledCategories));
+    localStorage.setItem("prioritiseHighCat", JSON.stringify(prioritiseHighCat));
+    localStorage.setItem("sendOrder", JSON.stringify(sendOrder));
+    localStorage.setItem("runTimes", JSON.stringify(time));
+
+    console.log("Saved priority: " + prioritiseHighCat);
+    console.table(troopTypeEnabled);
+    console.table(time);
+    console.table(sendOrder);
+    console.table(enabledCategories);
+    categoryEnabled = enabledCategories;
+
+    getData();
+}
+
+function sendGroup(groupNr, premiumEnabled) {
+    if (premiumEnabled == true) {
+        actuallyEnabled = false;
+        actuallyEnabled = confirm("Are you sure you want to send the scavenge runs using premium? Cancelling will send the scav run without premium.   ********* DEPENDING ON HOW MANY UNITS/VILLAGES YOU ARE SENDING, IT CAN TAK
 $("#contentContainer").eq(0).prepend(cssClassesSophie);
 $("#mobileHeader").eq(0).prepend(cssClassesSophie);
 
