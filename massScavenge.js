@@ -1452,7 +1452,8 @@ function clickLaunchGroups(autoDelay = 3000) { // Tempo entre cliques (3s padrã
         console.log("Botão de cálculo de tempo não encontrado!");
     }
 }, 15000); // Espera 15 segundos após o carregamento
-    function clickLaunchGroups(delayBetweenClicks = 2000) { // Tempo entre cliques (2s padrão)
+    }
+        function clickLaunchGroups(delayBetweenClicks = 2000) { // Tempo entre cliques (2s padrão)
     let launchButtons = $("input[value^='Launch group']");
     let index = 0;
 
@@ -1479,7 +1480,6 @@ function clickLaunchGroups(autoDelay = 3000) { // Tempo entre cliques (3s padrã
 // Chama a função assim que os botões forem detectados na interface
 setTimeout(clickLaunchGroups, 20000); // Aguarda 20 segundos para garantir que a interface esteja carregada
 
-    }
 }
 
 // Aguarda 10 segundos após carrega}
