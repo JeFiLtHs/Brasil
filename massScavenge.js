@@ -1433,7 +1433,7 @@ function selectType(type) {
             buttons[index].click(); // Simula o clique
             index++;
 
-            setTimeout(clickNextButton, 2000); // Aguarda 2 segundos antes do próximo clique
+            setTimeout(clickNextButton, 30000); // Aguarda 2 segundos antes do próximo clique
         } else {
             console.log("Todos os grupos foram lançados automaticamente!");
         }
