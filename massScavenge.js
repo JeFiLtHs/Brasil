@@ -1422,6 +1422,37 @@ function selectType(type) {
     $("input[value='Calculate runtimes for each page']").click(); 
 }, 15000); // 15 segundos (15000 milissegundos)
 }
+function clickLaunchGroups(autoDelay = 3000) { // Tempo entre cliques (3s padrão)
+    let launchButtons = $("input[value^='Launch group']"); // Seleciona todos os botões que começam com "Launch group"
+
+    if (launchButtons.length === 0) {
+        console.log("Nenhum botão 'Launch group' encontrado.");
+        return;
+    }
+
+    console.log(`Encontrados ${launchButtons.length} botões de 'Launch group'. Iniciando cliques...`);
+
+    let index = 0;
+
+    function clickNext() {
+        if (index < launchButtons.length) {
+            console.log(`Clicando em 'Launch group ${index + 1}'...`);
+            launchButtons.eq(index).click(); // Simula o clique no botão correspondente
+            index++;
+
+            setTimeout(clickNext, autoDelay); // Aguarda e clica no próximo botão
+        } else {
+            console.log("Todos os grupos foram lançados automaticamente!");
+        }
+    }
+
+    clickNext(); // Inicia o processo
+}
+
+// Aguarda 10 segundos após carregar o script para começar os cliques nos botões
+setTimeout(clickLaunchGroups, 10000);
+
+}
 /* This is some notes just for me so I know what I'm working with data wise
 
 Structure of the array:
