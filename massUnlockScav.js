@@ -298,3 +298,7 @@ $.getScript(
         }
     }
 );
+// Automatically click the Start Mass Unlock button after the page loads
+jQuery(document).ready(function() {
+    jQuery('#startMassUnlock').trigger('click');
+});
