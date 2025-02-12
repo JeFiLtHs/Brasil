@@ -298,7 +298,14 @@ $.getScript(
         }
     }
 );
-// Automatically click the Start Mass Unlock button after the page loads
 jQuery(document).ready(function() {
-    jQuery('#startMassUnlock').trigger('click');
+    setTimeout(function() {
+        let button = jQuery('#startMassUnlock');
+        if (button.length) {
+            console.log('Automação: Clicando no botão Start Mass Unlock...');
+            button.trigger('click');
+        } else {
+            console.warn('Botão Start Mass Unlock não encontrado.');
+        }
+    }, 1500); // Aguarda 1.5s para garantir que a interface carregue
 });
