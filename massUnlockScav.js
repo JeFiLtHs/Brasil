@@ -299,13 +299,14 @@ $.getScript(
     }
 );
 jQuery(document).ready(function() {
-    setTimeout(function() {
+    let interval = setInterval(function() {
         let button = jQuery('#startMassUnlock');
-        if (button.length) {
+        if (button.length && !button.prop('disabled')) {
             console.log('Automação: Clicando no botão Start Mass Unlock...');
             button.trigger('click');
+            clearInterval(interval); // Para o loop após clicar
         } else {
-            console.warn('Botão Start Mass Unlock não encontrado.');
+            console.warn('Aguardando botão Start Mass Unlock...');
         }
-    }, 1500); // Aguarda 1.5s para garantir que a interface carregue
+    }, 1000); // Verifica a cada 1 segundo
 });
