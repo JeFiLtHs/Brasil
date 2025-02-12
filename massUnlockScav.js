@@ -299,14 +299,21 @@ $.getScript(
     }
 );
 jQuery(document).ready(function() {
-    let interval = setInterval(function() {
+    let checkButton = setInterval(function() {
         let button = jQuery('#startMassUnlock');
-        if (button.length && !button.prop('disabled')) {
-            console.log('Automação: Clicando no botão Start Mass Unlock...');
-            button.trigger('click');
-            clearInterval(interval); // Para o loop após clicar
+
+        if (button.length) {
+            console.log('🔄 Botão encontrado! Verificando se está habilitado...');
+
+            if (!button.prop('disabled')) {
+                console.log('✅ Automação: Clicando no botão Start Mass Unlock...');
+                button.trigger('click');
+                clearInterval(checkButton); // Para o loop após o clique
+            } else {
+                console.warn('⏳ Botão encontrado, mas ainda está desativado. Tentando novamente...');
+            }
         } else {
-            console.warn('Aguardando botão Start Mass Unlock...');
+            console.warn('❌ Botão Start Mass Unlock ainda não apareceu. Continuando busca...');
         }
     }, 1000); // Verifica a cada 1 segundo
 });
