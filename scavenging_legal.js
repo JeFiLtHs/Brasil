@@ -466,38 +466,46 @@ function run(availableScavanges, unitsToUse) {
     get_optimal_factors(units, availableScavanges);
 }
 
-function optimization_callBack(optimization, units, availableScavanges)
-{
+function optimization_callBack(optimization, units, availableScavanges) {
     scavangeType = availableScavanges.shift();
     let btn = $("[class*='free_send_button']",$($("[class^='scavenge-option']")[scavangeType]))[0];
-    console.log(btn)
-    var unitsToUse = {...units};
-    myconsolelog("optimization haul");
-    myconsolelog(optimization[0]);
-    myconsolelog("optimization factors");
-    myconsolelog(optimization[1]);
-    var leftest_optimal = optimization[1].pop();
-    myconsolelog("leftest_optimal");    
-    myconsolelog(leftest_optimal);
+    console.log(btn);
 
-    $.each(units, function(key, val){units[key] = parseInt(leftest_optimal*val)})
-    var predHaul =lootFactors[scavangeType] * calculateHaul(units);
+    var unitsToUse = {...units};
+    console.log("optimization haul:", optimization[0]);
+    console.log("optimization factors:", optimization[1]);
+    
+    var leftest_optimal = optimization[1].pop();
+    console.log("leftest_optimal:", leftest_optimal);
+
+    $.each(units, function(key, val) { units[key] = parseInt(leftest_optimal * val); });
+    var predHaul = lootFactors[scavangeType] * calculateHaul(units);
 
     var time = hours * 3600;
-    var maxhaul = ((time / duration_factor - duration_initial_seconds) ** (1 / (duration_exponent)) / 100) ** (1 / 2);
+    var maxhaul = ((time / duration_factor - duration_initial_seconds) ** (1 / duration_exponent) / 100) ** (1 / 2);
 
-    if(predHaul > maxhaul)
-        $.each(units, function(key, val){units[key] = maxhaul/predHaul *val});
+    if (predHaul > maxhaul) {
+        $.each(units, function(key, val) { units[key] = (maxhaul / predHaul) * val; });
+    }
 
-    myconsolelog("unitsToUse before subtracting")
-    myconsolelog(unitsToUse);
-    $.each(units,function(key, obj){
+    console.log("unitsToUse before subtracting:", unitsToUse);
+    $.each(units, function(key, obj) {
         unitsToUse[key] -= obj;
-        $(`input.unitsInput[name='${key}']`).val(obj).trigger("change");})
-    myconsolelog("unitsToUse after subtracting")
-    myconsolelog(unitsToUse);
-    btn.focus();
+        $(`input.unitsInput[name='${key}']`).val(obj).trigger("change");
+    });
+    console.log("unitsToUse after subtracting:", unitsToUse);
+
+    // Clica automaticamente no botão de saque
+    btn.click();
+
+    // Se houver mais saques disponíveis, continua automaticamente
+    if (availableScavanges.length > 0) {
+        setTimeout(() => {
+            run(availableScavanges, unitsToUse);
+        }, 1000); // Pequeno delay para evitar erros de múltiplos cliques
+    }
 }
+
 
 function successfunc(data)
 {
