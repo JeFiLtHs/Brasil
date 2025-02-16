@@ -2006,3 +2006,28 @@ function resAfterBalance() {
     resBalancedHTML += `</table></div>`;
     Dialog.show('content', resBalancedHTML);
 }
+function autoClickSendResource() {
+    let buttons = document.querySelectorAll("button:contains('Send resources')"); // Seleciona todos os botões com "Send resources"
+
+    if (buttons.length === 0) {
+        console.log("Nenhum botão de envio encontrado.");
+        return;
+    }
+
+    console.log(`Encontrados ${buttons.length} botões. Iniciando cliques automáticos.`);
+
+    let delay = 200; // Intervalo entre cliques em milissegundos
+
+    buttons.forEach((button, index) => {
+        setTimeout(() => {
+            button.click();
+            console.log(`Botão ${index + 1} clicado.`);
+        }, index * delay);
+    });
+}
+
+// Aguarda a página carregar completamente
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(autoClickSendResource, 2000); // Aguarda 2 segundos antes de iniciar para garantir que os elementos existam
+});
+}
