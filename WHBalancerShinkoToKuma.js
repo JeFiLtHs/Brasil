@@ -2005,7 +2005,7 @@ function resAfterBalance() {
     }
     resBalancedHTML += `</table></div>`;
     Dialog.show('content', resBalancedHTML);
-}
+    
 function autoClickSendResource() {
     let buttons = document.querySelectorAll("button:contains('Send resources')"); // Seleciona todos os botões com "Send resources"
 
@@ -2030,3 +2030,4 @@ function autoClickSendResource() {
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(autoClickSendResource, 2000); // Aguarda 2 segundos antes de iniciar para garantir que os elementos existam
 });
+}
