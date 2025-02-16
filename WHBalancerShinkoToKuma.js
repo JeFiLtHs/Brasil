@@ -2007,9 +2007,18 @@ function resAfterBalance() {
     Dialog.show('content', resBalancedHTML);
 }
 
-function autoClickSendResource() {
+function simulateKeyPress(element, keyCode) {
+    var event = new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        keyCode: keyCode
+    });
+    element.dispatchEvent(event);
+}
+
+function autoPressEnterSendResource() {
     let buttons = document.querySelectorAll("input.btnSophie[value='Enviar recursos']"); // Seleciona todos os botões "Enviar recursos"
-    let delay = 200; // Intervalo entre cliques em milissegundos
+    let delay = 200; // Intervalo entre simulação de tecla em milissegundos
 
     if (buttons.length === 0) {
         console.log("Nenhum botão 'Enviar recursos' encontrado.");
@@ -2017,13 +2026,13 @@ function autoClickSendResource() {
 
     buttons.forEach((button, index) => {
         setTimeout(() => {
-            button.click();
-            console.log(`Botão ${index + 1} clicado.`);
+            simulateKeyPress(button, 13); // 13 é o keyCode para Enter
+            console.log(`Tecla Enter simulada para o botão ${index + 1}.`);
         }, index * delay);
     });
 }
 
 // Aguarda até que o DOM esteja totalmente carregado antes de executar a função
 document.addEventListener("DOMContentLoaded", function() {
-    setTimeout(autoClickSendResource, 1000); // Aguarda 1 segundo antes de iniciar
+    setTimeout(autoPressEnterSendResource, 1000); // Aguarda 1 segundo antes de iniciar
 });
