@@ -1417,6 +1417,39 @@ function selectType(type) {
             break;
 
     }
+    // Aguarda 15 segundos e clica no botão "Calcular tempos para cada página"
+setTimeout(() => {
+    let readyButton = document.getElementById("sendMass");
+    if (readyButton) {
+        readyButton.click();
+        console.log("Botão 'Calcular tempos' clicado automaticamente.");
+    }
+}, 15000);
+
+// Função para clicar automaticamente nos botões de envio de saque em grupos
+function autoSendGroups() {
+    let buttons = document.querySelectorAll("input[id^='sendMass']");
+    let index = 0;
+
+    function clickNext() {
+        if (index < buttons.length) {
+            setTimeout(() => {
+                buttons[index].click();
+                console.log(`Grupo ${index + 1} enviado automaticamente.`);
+                index++;
+                clickNext();
+            }, 1000); // Aguarda 5 segundos entre cada envio
+        }
+    }
+
+    clickNext();
+}
+
+// Aguarda 20 segundos e começa a enviar os saques automaticamente
+setTimeout(() => {
+    autoSendGroups();
+}, 2000);
+                                            
 }
 /* This is some notes just for me so I know what I'm working with data wise
 
