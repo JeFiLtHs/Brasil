@@ -2030,4 +2030,3 @@ function autoClickSendResource() {
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(autoClickSendResource, 2000); // Aguarda 2 segundos antes de iniciar para garantir que os elementos existam
 });
-}
