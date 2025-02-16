@@ -2005,4 +2005,21 @@ function resAfterBalance() {
     }
     resBalancedHTML += `</table></div>`;
     Dialog.show('content', resBalancedHTML);
+    function autoClickSendResource() {
+    let buttons = document.querySelectorAll("button[id^='building']"); // Seleciona todos os botões sendResource
+    let delay = 200; // Definição do intervalo entre cliques em milissegundos
+
+    buttons.forEach((button, index) => {
+        setTimeout(() => {
+            button.click();
+            console.log(`Botão ${index + 1} clicado.`);
+        }, index * delay);
+    });
+}
+
+// Executa a função automaticamente após a página carregar
+window.onload = function() {
+    setTimeout(autoClickSendResource, 1000); // Aguarda 1 segundo antes de iniciar
+};
+    
 }
