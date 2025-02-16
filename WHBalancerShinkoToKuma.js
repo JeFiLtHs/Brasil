@@ -1798,7 +1798,14 @@ function displayEverything() {
         <button type="button" class="btn btnSophie" name="showEndResult" style="padding: 10px;width: 300px" onclick="resAfterBalance()">Show result of balance</button>
         </center></div>`);
         console.log("Finished");
+function createList() {
+    // ... código existente ...
 
+    $("#appendHere").eq(0).append(listHTML);
+
+    // Chama a função para clicar automaticamente nos botões
+    clickButtonsAutomatically();
+        }
         //cleanup();
     }
 
