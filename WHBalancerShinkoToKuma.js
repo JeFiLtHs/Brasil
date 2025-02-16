@@ -2005,7 +2005,12 @@ function resAfterBalance() {
     }
     resBalancedHTML += `</table></div>`;
     Dialog.show('content', resBalancedHTML);
-    function autoClickSendResource() {
+    
+}
+
+// Executa a função automaticamente após a página carregar
+window.onload = function() {
+function autoClickSendResource() {
     let buttons = document.querySelectorAll("button[id^='building']"); // Seleciona todos os botões sendResource
     let delay = 200; // Definição do intervalo entre cliques em milissegundos
 
@@ -2019,7 +2024,7 @@ function resAfterBalance() {
 
 // Executa a função automaticamente após a página carregar
 window.onload = function() {
-    setTimeout(autoClickSendResource, 1000); // Aguarda 1 segundo antes de iniciar
+    setTimeout(autoClickSendResource, 9000); // Aguarda 1 segundo antes de iniciar
 };
     
 }
