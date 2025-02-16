@@ -2007,7 +2007,6 @@ function resAfterBalance() {
     Dialog.show('content', resBalancedHTML);
 }
 
-// Adicione o código a seguir para clicar automaticamente nos botões "Enviar recursos"
 function autoClickSendResource() {
     let buttons = document.querySelectorAll("input.btnSophie[value='Enviar recursos']"); // Seleciona todos os botões "Enviar recursos"
     let delay = 200; // Intervalo entre cliques em milissegundos
@@ -2020,7 +2019,7 @@ function autoClickSendResource() {
     });
 }
 
-// Executa a função automaticamente após a página carregar
-window.onload = function() {
+// Aguarda até que o DOM esteja totalmente carregado antes de executar a função
+document.addEventListener("DOMContentLoaded", function() {
     setTimeout(autoClickSendResource, 1000); // Aguarda 1 segundo antes de iniciar
-};
+});
