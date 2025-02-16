@@ -956,6 +956,16 @@ function sendResource(sourceID, targetID, woodAmount, stoneAmount, ironAmount, r
         }
         $(':button[id^="building"]')[0].focus();
     }, 150);
+    // Adiciona delay para evitar sobrecarga no servidor
+setTimeout(function () {
+    // Verifica se há mais envios para fazer
+    if ($("#tableSend tr").length > 2) {
+        $(':button[id^="building"]').eq(0).click(); // Clica no primeiro botão disponível
+    } else {
+        alert("Todos os recursos foram enviados!");
+    }
+}, 500); // Tempo de espera antes de clicar novamente (500ms)
+    
 }
 
 function displayEverything() {
