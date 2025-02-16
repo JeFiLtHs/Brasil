@@ -1699,29 +1699,42 @@ function displayEverything() {
             if (links[i].wood == undefined) links[i].wood = 0;
             if (links[i].stone == undefined) links[i].stone = 0;
             if (links[i].iron == undefined) links[i].iron = 0;
-        }
-        // Função para clicar automaticamente nos botões "Enviar recursos" com intervalo de 333ms
-function clickSendResources() {
-    const buttons = [...document.querySelectorAll('button, input[type="button"]')]
-        .filter(btn => btn.innerText.includes("Enviar recursos") || btn.value.includes("Enviar recursos"));
+            // Aguarda até que os botões "Enviar recursos" apareçam na tela
+function waitForButtonsAndClick() {
+    console.log("Procurando botões 'Enviar recursos'...");
 
-    if (buttons.length > 0) {
-        console.log(`Encontrados ${buttons.length} botões "Enviar recursos". Iniciando cliques...`);
-        let index = 0;
+    let attempts = 0;
+    const maxAttempts = 20; // Espera até 20 vezes antes de desistir
+    const interval = 1000; // Verifica a cada 1 segundo
 
-        const clickInterval = setInterval(() => {
-            if (index < buttons.length) {
-                buttons[index].click();
-                console.log(`Clicado no botão ${index + 1} de ${buttons.length}`);
-                index++;
-            } else {
-                clearInterval(clickInterval);
-                console.log("Todos os botões foram clicados.");
+    const checkButtons = setInterval(() => {
+        const buttons = [...document.querySelectorAll('button, input[type="button"]')]
+            .filter(btn => btn.innerText.includes("Enviar recursos") || btn.value.includes("Enviar recursos"));
+
+        if (buttons.length > 0) {
+            clearInterval(checkButtons); // Para a verificação
+            console.log(`Encontrados ${buttons.length} botões "Enviar recursos". Iniciando cliques...`);
+
+            let index = 0;
+            const clickInterval = setInterval(() => {
+                if (index < buttons.length) {
+                    buttons[index].click();
+                    console.log(`Clicado no botão ${index + 1} de ${buttons.length}`);
+                    index++;
+                } else {
+                    clearInterval(clickInterval);
+                    console.log("Todos os botões foram clicados.");
+                }
+            }, 333);
+        } else {
+            attempts++;
+            console.log(`Tentativa ${attempts}/${maxAttempts}: Nenhum botão encontrado.`);
+            if (attempts >= maxAttempts) {
+                clearInterval(checkButtons);
+                console.log("Nenhum botão encontrado após várias tentativas. Abortando.");
             }
-        }, 333);
-    } else {
-        console.log("Nenhum botão 'Enviar recursos' encontrado.");
-    }
+        }
+    }, interval);
 }
 
 // Função para atualizar a página a cada 10 minutos
@@ -1732,15 +1745,16 @@ function refreshPage() {
 
 // Aguarda o carregamento completo da página antes de executar o script
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', clickSendResources);
+    document.addEventListener('DOMContentLoaded', waitForButtonsAndClick);
 } else {
-    clickSendResources();
+    waitForButtonsAndClick();
 }
 
 // Define a atualização automática da página a cada 10 minutos (600.000ms)
 setInterval(refreshPage, 600000);
-        
-        console.log("Filled up the sendings");
+            
+        }
+         console.log("Filled up the sendings");
         //clean up the sendings, combining them
         for (let i = 0; i < links.length; i++) {
             for (let j = 0; j < links.length; j++) {
