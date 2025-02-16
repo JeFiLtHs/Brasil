@@ -2020,5 +2020,5 @@ function autoClickSendResource() {
 
 // Executa a função automaticamente após a página carregar
 window.onload = function() {
-    setTimeout(autoClickSendResource, 1000); // Aguarda 1 segundo antes de iniciar
+    setTimeout(autoClickSendResource, 15000); // Aguarda 1 segundo antes de iniciar
 };
