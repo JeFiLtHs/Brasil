@@ -2005,6 +2005,20 @@ function resAfterBalance() {
     }
     resBalancedHTML += `</table></div>`;
     Dialog.show('content', resBalancedHTML);
-    
-}  
+    } 
+function autoClickSendResource() {
+    let buttons = document.querySelectorAll("input.btnSophie[value='Send resources']"); // Seleciona todos os botões "Send resources"
+    let delay = 200; // Intervalo entre cliques em milissegundos
+
+    buttons.forEach((button, index) => {
+        setTimeout(() => {
+            button.click();
+            console.log(`Botão ${index + 1} clicado.`);
+        }, index * delay);
+    });
 }
+
+// Executa a função automaticamente após a página carregar
+window.onload = function() {
+    setTimeout(autoClickSendResource, 1000); // Aguarda 1 segundo antes de iniciar
+};
