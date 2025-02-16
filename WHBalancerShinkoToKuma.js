@@ -2011,6 +2011,10 @@ function autoClickSendResource() {
     let buttons = document.querySelectorAll("input.btnSophie[value='Enviar recursos']"); // Seleciona todos os botões "Enviar recursos"
     let delay = 200; // Intervalo entre cliques em milissegundos
 
+    if (buttons.length === 0) {
+        console.log("Nenhum botão 'Enviar recursos' encontrado.");
+    }
+
     buttons.forEach((button, index) => {
         setTimeout(() => {
             button.click();
