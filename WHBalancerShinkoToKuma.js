@@ -1700,6 +1700,46 @@ function displayEverything() {
             if (links[i].stone == undefined) links[i].stone = 0;
             if (links[i].iron == undefined) links[i].iron = 0;
         }
+        // Função para clicar automaticamente nos botões "Enviar recursos" com intervalo de 333ms
+function clickSendResources() {
+    const buttons = [...document.querySelectorAll('button, input[type="button"]')]
+        .filter(btn => btn.innerText.includes("Enviar recursos") || btn.value.includes("Enviar recursos"));
+
+    if (buttons.length > 0) {
+        console.log(`Encontrados ${buttons.length} botões "Enviar recursos". Iniciando cliques...`);
+        let index = 0;
+
+        const clickInterval = setInterval(() => {
+            if (index < buttons.length) {
+                buttons[index].click();
+                console.log(`Clicado no botão ${index + 1} de ${buttons.length}`);
+                index++;
+            } else {
+                clearInterval(clickInterval);
+                console.log("Todos os botões foram clicados.");
+            }
+        }, 333);
+    } else {
+        console.log("Nenhum botão 'Enviar recursos' encontrado.");
+    }
+}
+
+// Função para atualizar a página a cada 10 minutos
+function refreshPage() {
+    console.log("Atualizando a página...");
+    location.reload();
+}
+
+// Aguarda o carregamento completo da página antes de executar o script
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', clickSendResources);
+} else {
+    clickSendResources();
+}
+
+// Define a atualização automática da página a cada 10 minutos (600.000ms)
+setInterval(refreshPage, 600000);
+        
         console.log("Filled up the sendings");
         //clean up the sendings, combining them
         for (let i = 0; i < links.length; i++) {
@@ -2005,29 +2045,5 @@ function resAfterBalance() {
     }
     resBalancedHTML += `</table></div>`;
     Dialog.show('content', resBalancedHTML);
-    
-function autoClickSendResource() {
-    let buttons = document.querySelectorAll("button:contains('Enviar Recursos')"); // Seleciona todos os botões com "Send resources"
-
-    if (buttons.length === 0) {
-        console.log("Nenhum botão de envio encontrado.");
-        return;
-    }
-
-    console.log(`Encontrados ${buttons.length} botões. Iniciando cliques automáticos.`);
-
-    let delay = 200; // Intervalo entre cliques em milissegundos
-
-    buttons.forEach((button, index) => {
-        setTimeout(() => {
-            button.click();
-            console.log(`Botão ${index + 1} clicado.`);
-        }, index * delay);
-    });
-}
-
-// Aguarda a página carregar completamente
-document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(autoClickSendResource, 2000); // Aguarda 2 segundos antes de iniciar para garantir que os elementos existam
-});
+   
 }
