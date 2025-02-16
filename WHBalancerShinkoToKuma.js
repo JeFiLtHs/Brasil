@@ -1947,7 +1947,7 @@ function sliderChange(name, val) {
 }
 
 function resAfterBalance() {
-    resBalancedHTML = `<div class='sophRowA' style='width:800px' ><table style='width:100%'><tr class="sophHeader"><td>Village</td><td>Points</td><td>Merchants left</td><td colspan="3">Resources</td><td>WH capacity</td></tr>`;
+    resBalancedHTML = `<div class='sophRowA' style='width:800px' ><table style='width:100%'><tr class="sophHeader"><td>Village</td><td>Points</td><td>Merchants left</td><td colspan="3">Resources</td><td>Warehouse Capacity</td></tr>`;
     for (var i = 0; i < villagesData.length; i++) {
         thisMerchantLeft = villagesData[i].availableMerchants;
         if (incomingRes[villagesData[i].id] != undefined) {
@@ -2005,9 +2005,11 @@ function resAfterBalance() {
     }
     resBalancedHTML += `</table></div>`;
     Dialog.show('content', resBalancedHTML);
-    } 
+}
+
+// Adicione o código a seguir para clicar automaticamente nos botões "Enviar recursos"
 function autoClickSendResource() {
-    let buttons = document.querySelectorAll("input.btnSophie[value='Send resources']"); // Seleciona todos os botões "Send resources"
+    let buttons = document.querySelectorAll("input.btnSophie[value='Enviar recursos']"); // Seleciona todos os botões "Enviar recursos"
     let delay = 200; // Intervalo entre cliques em milissegundos
 
     buttons.forEach((button, index) => {
@@ -2020,5 +2022,5 @@ function autoClickSendResource() {
 
 // Executa a função automaticamente após a página carregar
 window.onload = function() {
-    setTimeout(autoClickSendResource, 15000); // Aguarda 1 segundo antes de iniciar
+    setTimeout(autoClickSendResource, 1000); // Aguarda 1 segundo antes de iniciar
 };
