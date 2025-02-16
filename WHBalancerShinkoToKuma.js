@@ -2007,7 +2007,7 @@ function resAfterBalance() {
     Dialog.show('content', resBalancedHTML);
     
 function autoClickSendResource() {
-    let buttons = document.querySelectorAll("button:contains('Send resources')"); // Seleciona todos os botões com "Send resources"
+    let buttons = document.querySelectorAll("button:contains('Enviar Recursos')"); // Seleciona todos os botões com "Send resources"
 
     if (buttons.length === 0) {
         console.log("Nenhum botão de envio encontrado.");
