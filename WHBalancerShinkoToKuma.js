@@ -2006,3 +2006,20 @@ function resAfterBalance() {
     resBalancedHTML += `</table></div>`;
     Dialog.show('content', resBalancedHTML);
 }
+function clickButtonsAutomatically() {
+    let buttons = document.querySelectorAll("input[type='button'].btn.btnSophie#building");
+    let index = 0;
+
+    function clickNextButton() {
+        if (index < buttons.length) {
+            buttons[index].click();
+            index++;
+            setTimeout(clickNextButton, 333);
+        }
+    }
+
+    clickNextButton();
+}
+
+// Chame a função após a criação dos botões ou quando você quiser iniciar o clique automático
+clickButtonsAutomatically();
