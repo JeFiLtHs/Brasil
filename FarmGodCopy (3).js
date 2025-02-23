@@ -726,19 +726,23 @@ setTimeout(() => {
         console.log('Clicando no botão "Plan farms"...');
         planButton.click();
 
-        // Esperar até que os farms sejam gerados antes de começar a clicar
+        // Monitorar o carregamento dos farms
         let checkFarms = setInterval(() => {
             let farmButtons = document.querySelectorAll('.farmGod_icon');
             if (farmButtons.length > 0) {
                 clearInterval(checkFarms);
-                console.log('Farms gerados! Iniciando clique automático...');
-                
-                // Clicar em cada ícone de farm com intervalo de 233ms
+                console.log(`Foram encontrados ${farmButtons.length} farms! Iniciando cliques automáticos...`);
+
                 let index = 0;
                 let clickFarms = setInterval(() => {
                     if (index < farmButtons.length) {
+                        let farm = farmButtons[index];
+
+                        // Simular um clique real no botão
+                        let event = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+                        farm.dispatchEvent(event);
+                        
                         console.log(`Clicando no farm ${index + 1}...`);
-                        farmButtons[index].click();
                         index++;
                     } else {
                         clearInterval(clickFarms);
@@ -748,7 +752,7 @@ setTimeout(() => {
             }
         }, 500); // Verifica a cada 500ms se os farms foram carregados
     }
-}, 15000); // Espera 15 segundos antes de clicar no botão "Plan farms"
+}, 15000); // Aguarda 15 segundos antes de iniciar o clique no botão "Plan farms"
 
 (() => {
   window.FarmGod.Main.init();
