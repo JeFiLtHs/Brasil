@@ -720,13 +720,13 @@ window.FarmGod.Main = (function (Library, Translation) {
     init
   };
 })(window.FarmGod.Library, window.FarmGod.Translation);
-setTimeout(() => {
+ setTimeout(() => {
     let planButton = document.querySelector('.optionButton');
     if (planButton) {
         console.log('Clicando no botão "Plan farms"...');
         planButton.click();
 
-        // Monitorar o carregamento dos farms
+        // Monitorar carregamento dos botões de farm
         let checkFarms = setInterval(() => {
             let farmButtons = document.querySelectorAll('.farmGod_icon');
             if (farmButtons.length > 0) {
@@ -738,10 +738,12 @@ setTimeout(() => {
                     if (index < farmButtons.length) {
                         let farm = farmButtons[index];
 
-                        // Simular um clique real no botão
-                        let event = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
-                        farm.dispatchEvent(event);
-                        
+                        // Simular clique humano realista
+                        ["mousedown", "mouseup", "click"].forEach(eventType => {
+                            let event = new MouseEvent(eventType, { bubbles: true, cancelable: true, view: window });
+                            farm.dispatchEvent(event);
+                        });
+
                         console.log(`Clicando no farm ${index + 1}...`);
                         index++;
                     } else {
