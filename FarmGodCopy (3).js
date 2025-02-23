@@ -426,26 +426,36 @@ window.FarmGod.Main = (function (Library, Translation) {
   };
 
   const bindEventHandlers = function () {
-    $('.farmGod_icon').off('click').on('click', function () {
+  const bindEventHandlers = function () {
+  $('.farmGod_icon').off('click').on('click', function () {
+    if (game_data.market != 'nl' || $(this).data('origin') == curVillage) {
+      sendFarm($(this));
+    } else {
+      UI.ErrorMessage(t.messages.villageError);
+    }
+  });
+
+  // Acionando o clique automatizado em todos os ícones .farmGod_icon
+  setInterval(() => {
+    $('.farmGod_icon').each(function() {
       if (game_data.market != 'nl' || $(this).data('origin') == curVillage) {
-        sendFarm($(this));
-      } else {
-        UI.ErrorMessage(t.messages.villageError);
+        $(this).trigger('click');
       }
     });
+  }, 5000); // Exemplo de intervalo de 5 segundos entre cliques automatizados
 
-    $(document).off('keydown').on('keydown', (event) => {
-      if ((event.keyCode || event.which) == 13) {
-        $('.farmGod_icon').first().trigger('click');
-      }
-    });
+  $(document).off('keydown').on('keydown', (event) => {
+    if ((event.keyCode || event.which) == 13) {
+      $('.farmGod_icon').first().trigger('click');
+    }
+  });
 
-    $('.switchVillage').off('click').on('click', function () {
-      curVillage = $(this).data('id');
-      UI.SuccessMessage(t.messages.villageChanged);
-      $(this).closest('tr').remove();
-    });
-  };
+  $('.switchVillage').off('click').on('click', function () {
+    curVillage = $(this).data('id');
+    UI.SuccessMessage(t.messages.villageChanged);
+    $(this).closest('tr').remove();
+  });
+};
 
   const buildOptions = function () {
     let options = JSON.parse(localStorage.getItem('farmGod_options')) || { optionGroup: 0, optionDistance: 25, optionTime: 10, optionLosses: false, optionMaxloot: true, optionNewbarbs: true };
