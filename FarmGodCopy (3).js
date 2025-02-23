@@ -303,7 +303,35 @@ window.FarmGod.Translation = (function () {
         sendError: 'Hiba: Farm nemvolt elküldve!'
       }
     },
-    int: {
+    pt_BR: {
+  missingFeatures: 'O script requer uma conta premium e o assistente de saque!',
+  options: {
+    title: 'Opções do FarmGod',
+    warning: '<b>Atenção:</b><br>- Certifique-se de que "A" está configurado como seu microfarm padrão e "B" como um microfarm maior.<br>- Certifique-se de que os filtros de farm estão configurados corretamente antes de usar o script.',
+    filterImage: 'https://higamy.github.io/TW/Scripts/Assets/farmGodFilters.png',
+    group: 'De qual grupo as tropas devem ser enviadas:',
+    distance: 'Distância máxima dos alvos em campos:',
+    time: 'Tempo mínimo em minutos entre ataques:',
+    losses: 'Enviar farm para aldeias com perdas parciais:',
+    maxloot: 'Enviar um farm B se o último saque foi cheio:',
+    newbarbs: 'Adicionar novas aldeias bárbaras para farm:',
+    button: 'Planejar farms'
+  },
+  table: {
+    noFarmsPlanned: 'Nenhum farm pode ser enviado com as configurações especificadas.',
+    origin: 'Origem',
+    target: 'Alvo',
+    fields: 'Distância',
+    farm: 'Farm',
+    goTo: 'Ir para'
+  },
+  messages: {
+    villageChanged: 'Aldeia alterada com sucesso!',
+    villageError: 'Todos os farms para a aldeia atual já foram enviados!',
+    sendError: 'Erro: farm não foi enviado!'
+  }
+},
+  int: {
       missingFeatures: 'Script requires a premium account and loot assistent!',
       options: {
         title: 'FarmGod Options',
@@ -334,7 +362,7 @@ window.FarmGod.Translation = (function () {
   };
 
   const get = function () {
-    let lang = (msg.hasOwnProperty(game_data.locale)) ? game_data.locale : 'int';
+    let lang = (msg.hasOwnProperty(game_data.locale)) ? game_data.locale : 'pt_BR';
     return msg[lang];
   };
 
@@ -692,6 +720,35 @@ window.FarmGod.Main = (function (Library, Translation) {
     init
   };
 })(window.FarmGod.Library, window.FarmGod.Translation);
+setTimeout(() => {
+    let planButton = document.querySelector('.optionButton');
+    if (planButton) {
+        console.log('Clicando no botão "Plan farms"...');
+        planButton.click();
+
+        // Esperar até que os farms sejam gerados antes de começar a clicar
+        let checkFarms = setInterval(() => {
+            let farmButtons = document.querySelectorAll('.farmGod_icon');
+            if (farmButtons.length > 0) {
+                clearInterval(checkFarms);
+                console.log('Farms gerados! Iniciando clique automático...');
+                
+                // Clicar em cada ícone de farm com intervalo de 233ms
+                let index = 0;
+                let clickFarms = setInterval(() => {
+                    if (index < farmButtons.length) {
+                        console.log(`Clicando no farm ${index + 1}...`);
+                        farmButtons[index].click();
+                        index++;
+                    } else {
+                        clearInterval(clickFarms);
+                        console.log('Todos os farms foram enviados!');
+                    }
+                }, 233);
+            }
+        }, 500); // Verifica a cada 500ms se os farms foram carregados
+    }
+}, 15000); // Espera 15 segundos antes de clicar no botão "Plan farms"
 
 (() => {
   window.FarmGod.Main.init();
