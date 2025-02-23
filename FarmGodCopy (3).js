@@ -720,41 +720,24 @@ window.FarmGod.Main = (function (Library, Translation) {
     init
   };
 })(window.FarmGod.Library, window.FarmGod.Translation);
- setTimeout(() => {
-    let planButton = document.querySelector('.optionButton');
-    if (planButton) {
-        console.log('Clicando no botão "Plan farms"...');
-        planButton.click();
+setTimeout(() => {
+    console.log("Ativando o envio automático de farms via tecla Enter...");
 
-        // Monitorar carregamento dos botões de farm
-        let checkFarms = setInterval(() => {
-            let farmButtons = document.querySelectorAll('.farmGod_icon');
-            if (farmButtons.length > 0) {
-                clearInterval(checkFarms);
-                console.log(`Foram encontrados ${farmButtons.length} farms! Iniciando cliques automáticos...`);
+    let pressEnter = setInterval(() => {
+        let event = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            keyCode: 13,
+            code: 'Enter',
+            which: 13,
+            bubbles: true
+        });
 
-                let index = 0;
-                let clickFarms = setInterval(() => {
-                    if (index < farmButtons.length) {
-                        let farm = farmButtons[index];
+        document.dispatchEvent(event); // Enviar evento ao jogo
+        console.log("Enter pressionado!");
 
-                        // Simular clique humano realista
-                        ["mousedown", "mouseup", "click"].forEach(eventType => {
-                            let event = new MouseEvent(eventType, { bubbles: true, cancelable: true, view: window });
-                            farm.dispatchEvent(event);
-                        });
+    }, 233); // Pressiona Enter a cada 233ms
 
-                        console.log(`Clicando no farm ${index + 1}...`);
-                        index++;
-                    } else {
-                        clearInterval(clickFarms);
-                        console.log('Todos os farms foram enviados!');
-                    }
-                }, 233);
-            }
-        }, 500); // Verifica a cada 500ms se os farms foram carregados
-    }
-}, 15000); // Aguarda 15 segundos antes de iniciar o clique no botão "Plan farms"
+}, 15000); // Aguarda 15 segundos antes de iniciar
 
 (() => {
   window.FarmGod.Main.init();
