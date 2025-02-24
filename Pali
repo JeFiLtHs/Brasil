@@ -1,0 +1,186 @@
+/*
+ * Script Name: KNIGHT TRAINING IN-GAME
+ * Version: v1.5
+ * Last Updated: 2025-02-24
+ * Author: K I N G S
+ * Author Contact: +55 48-98824-2773
+ */
+
+/*--------------------------------------------------------------------------------------
+ * This script can NOT be cloned and modified without permission from the script author.
+ --------------------------------------------------------------------------------------*/
+
+// Função para carregar configurações salvas
+function loadKnightConfig() {
+    return JSON.parse(localStorage.getItem('knightConfig') || '{}');
+}
+
+// Função para salvar configurações
+function saveKnightConfig(config) {
+    localStorage.setItem('knightConfig', JSON.stringify(config));
+}
+
+// Executa apenas na tela de paladinos
+if (window.location.href.includes('screen=knight')) {
+    const config = loadKnightConfig();
+    const knightBlocks = $('.knight-box'); // Ajuste o selector conforme a estrutura HTML real
+
+    // Adiciona controles globais no topo da tela (ou onde for mais apropriado)
+    let $controls = `
+        <div class="info_box" style="margin-bottom: 10px;">
+            <div class="content">
+                <button id="selectAll" class="btn">Select All</button>
+                <button id="deselectAll" class="btn">Deselect All</button>
+                <button id="pauseAll" class="btn">Pause All</button>
+            </div>
+        </div>`;
+
+    $('.contentBox').prepend($controls); // Ajuste o selector para o container correto
+
+    // Adiciona checkboxes, seletores de duração e status diretamente em cada bloco de paladino
+    knightBlocks.each(function() {
+        const knightName = $(this).find('.knight-name').text(); // Ajuste para o selector do nome
+        const knightId = $(this).data('knight-id') || knightName;
+        const knight = Object.values(BuildingStatue.knights).find(k => k.id === knightId || k.name === knightName);
+        if (!knight) return;
+
+        const savedDuration = config[knightId]?.duration || 0;
+        const isSelected = config[knightId]?.selected || false;
+        const status = config[knightId]?.status || 'Idle';
+
+        // Adiciona elementos ao lado do nome ou em uma nova linha dentro do bloco
+        $(this).find('.knight-details').append(`
+            <div class="knight-controls" style="margin-top: 5px;">
+                <input type="checkbox" class="knight-select" data-knight="${knightId}" 
+                    ${isSelected ? 'checked' : ''}>
+                <select class="duration-select" data-knight="${knightId}" style="margin-left: 5px;">
+                    ${knight.usable_regimens.map((reg, i) => 
+                        `<option value="${i}" ${i === savedDuration ? 'selected' : ''}>
+                            ${String(Math.floor(reg.duration / 3600)).padStart(2, '0')}:${String(Math.floor((reg.duration % 3600) / 60)).padStart(2, '0')}:${String(reg.duration % 60).padStart(2, '0')}
+                        </option>`
+                    ).join('')}
+                </select>
+                <span class="knight-status" data-knight="${knightId}" style="margin-left: 5px; color: #666;">
+                    (${status})
+                </span>
+            </div>`);
+    });
+
+    // Evento para checkboxes e durações
+    $('.knight-select, .duration-select').on('change', function() {
+        const knightId = $(this).data('knight');
+        const isChecked = $('.knight-select[data-knight="' + knightId + '"]').is(':checked');
+        const duration = $('.duration-select[data-knight="' + knightId + '"]').val();
+
+        const currentConfig = loadKnightConfig();
+        currentConfig[knightId] = {
+            selected: isChecked,
+            duration: Number(duration),
+            status: isChecked ? 'Training...' : 'Idle'
+        };
+        saveKnightConfig(currentConfig);
+
+        $('.knight-status[data-knight="' + knightId + '"]').text(`(${currentConfig[knightId].status})`);
+
+        if (isChecked) {
+            startTraining(knightId, Number(duration));
+        } else {
+            stopTraining(knightId);
+        }
+    });
+
+    // Botões de controle
+    $('#selectAll').on('click', function() {
+        $('.knight-select').prop('checked', true).trigger('change');
+    });
+
+    $('#deselectAll').on('click', function() {
+        $('.knight-select').prop('checked', false).trigger('change');
+    });
+
+    $('#pauseAll').on('click', function() {
+        Object.keys(loadKnightConfig()).forEach(knightId => stopTraining(knightId));
+        $('.knight-select').prop('checked', false).trigger('change');
+    });
+
+    // Função para iniciar treinamento
+    function startTraining(knightId, durationIndex) {
+        const knight = Object.values(BuildingStatue.knights).find(k => k.id === knightId || k.name === knightId);
+        if (!knight) {
+            UI.ErrorMessage(`Knight ${knightId} not found`);
+            return;
+        }
+
+        // Validação básica (ajuste conforme necessário)
+        if (!knight.usable_regimens[durationIndex]) {
+            UI.ErrorMessage(`Invalid training duration for ${knight.name}`);
+            return;
+        }
+
+        TribalWars.post(
+            game_data.link_base.replace('amp;screen=', '') + 'screen=statue&ajaxaction=regimen',
+            null,
+            {
+                knight: knightId,
+                regimen: knight.usable_regimens[durationIndex].id,
+            },
+            function() {
+                const config = loadKnightConfig();
+                config[knightId].status = `Training (${formatTime(knight.usable_regimens[durationIndex].duration)})`;
+                saveKnightConfig(config);
+                $('.knight-status[data-knight="' + knightId + '"]').text(`(${config[knightId].status})`);
+
+                UI.SuccessMessage(`Training started for ${knight.name}`);
+
+                // Agenda próximo treinamento
+                setTimeout(() => {
+                    if (config[knightId]?.selected) {
+                        startTraining(knightId, durationIndex);
+                    } else {
+                        config[knightId].status = 'Idle';
+                        saveKnightConfig(config);
+                        $('.knight-status[data-knight="' + knightId + '"]').text('(Idle)');
+                    }
+                }, knight.usable_regimens[durationIndex].duration * 1000);
+            },
+            function(r) {
+                console.error(r);
+                UI.ErrorMessage(`Failed to start training for ${knight.name}. Retrying in 5 seconds...`);
+                setTimeout(() => {
+                    if (loadKnightConfig()[knightId]?.selected) {
+                        startTraining(knightId, durationIndex);
+                    }
+                }, 5000);
+            }
+        );
+    }
+
+    // Função para parar treinamento
+    function stopTraining(knightId) {
+        const config = loadKnightConfig();
+        if (config[knightId]) {
+            config[knightId].status = 'Idle';
+            config[knightId].selected = false;
+            saveKnightConfig(config);
+            $('.knight-status[data-knight="' + knightId + '"]').text('(Idle)');
+        }
+        UI.InfoMessage(`Training stopped for ${knightId}`);
+    }
+
+    // Formata tempo para exibição
+    function formatTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // Inicia treinamentos para paladinos já selecionados
+    Object.keys(config).forEach(knightId => {
+        if (config[knightId]?.selected) {
+            startTraining(knightId, config[knightId].duration);
+        }
+    });
+} else {
+    UI.InfoMessage('Knight Training running in background - Switch to Knight screen for configuration');
+}
