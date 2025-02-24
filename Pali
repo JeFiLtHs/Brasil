@@ -1,0 +1,91 @@
+/*
+ * Script Name: KNIGHT TRAINING (SELECTIVE & ANYWHERE)
+ * Version: v1.3
+ * Last Updated: 2025-02-23
+ * Author: K I N G S
+ * Author Contact: +55 48-98824-2773
+ */
+
+/*--------------------------------------------------------------------------------------
+ * This script can NOT be cloned and modified without permission from the script author.
+ --------------------------------------------------------------------------------------*/
+
+// Função para construir e exibir o diálogo
+function showKnightTrainingDialog() {
+    let $html = `<h3 align="center">Knight Training</h3>
+    <div class="info_box">
+        <div class="content">Select knights to train (First Regimen):</div>
+    </div>
+    <table width="100%">
+        <tbody>`;
+
+    // Lista de paladinos com checkboxes
+    Object.keys(BuildingStatue.knights).forEach((knightId, index) => {
+        const knight = BuildingStatue.knights[knightId];
+        $html += `
+            <tr>
+                <td>
+                    <div style="margin: 5px">
+                        <input type="checkbox" name="knight-select" value="${knight.id}" id="knight-${knight.id}">
+                        <label for="knight-${knight.id}">${knight.name || `Knight ${index + 1}`}</label>
+                    </div>
+                </td>
+            </tr>`;
+    });
+
+    $html += `
+        </tbody>
+    </table>
+    <div style="padding-top: 4px">
+        <input type="button" id="start" class="btn" value="Start Training">
+    </div>
+    <br>
+    <small>
+        <strong>
+            Knight Training v1.3 by<span style="color: red"> K I N G S </span>
+        </strong>
+    </small>`;
+
+    // Exibe o diálogo
+    Dialog.show('KnightTraining', $html);
+
+    // Ação do botão "Start Training"
+    $('#start').on('click', function (e) {
+        e.preventDefault();
+        
+        // Pega os paladinos selecionados
+        const selectedKnights = $('input[name="knight-select"]:checked').map(function () {
+            return $(this).val();
+        }).get();
+
+        if (selectedKnights.length === 0) {
+            UI.ErrorMessage('Please select at least one knight to train.');
+            return;
+        }
+
+        Dialog.close();
+
+        // Treina os paladinos selecionados na primeira configuração (índice 0)
+        selectedKnights.forEach((knightId, index) => {
+            setTimeout(function () {
+                TribalWars.post(
+                    game_data.link_base.replace('amp;screen=', '') + 'screen=statue&ajaxaction=regimen',
+                    null,
+                    {
+                        knight: knightId,
+                        regimen: BuildingStatue.knights[knightId].usable_regimens[0].id, // Primeira configuração
+                    },
+                    function () {
+                        UI.SuccessMessage(`Training started for knight ${BuildingStatue.knights[knightId].name || knightId}.`);
+                    },
+                    function (r) {
+                        console.error(r);
+                    }
+                );
+            }, index * 250); // Delay de 250ms entre cada requisição
+        });
+    });
+}
+
+// Executa o script em qualquer tela
+showKnightTrainingDialog();
