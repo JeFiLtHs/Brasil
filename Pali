@@ -1,6 +1,6 @@
 /*
- * Script Name: KNIGHT TRAINING AUTO
- * Version: v1.2
+ * Script Name: KNIGHT TRAINING CHECKBOX
+ * Version: v1.3
  * Last Updated: 2025-02-24
  * Author: K I N G S
  * Author Contact: +55 48-98824-2773
@@ -20,61 +20,23 @@ function saveKnightSelections(selections) {
     localStorage.setItem('knightSelections', JSON.stringify(selections));
 }
 
-// Função principal
-(function() {
-    // HTML do diálogo
-    let $html = `<h3 align="center">Knight Training Auto</h3>
-    <div class="info_box">
-        <div class="content">Select knights and training duration:</div>
-    </div>
-    <table width="100%">
-        <tbody>
-            <tr>
-                <td colspan="2">
-                    <div class="time">
-                        <select id="trainDuration">
-                            ${BuildingStatue.knights[Object.keys(BuildingStatue.knights)[0]].usable_regimens.map((el, i) => 
-                                `<option value="${i}">${String(Math.floor(el.duration / 3600)).padStart(2, '0')}:${String(Math.floor((el.duration % 3600) / 60)).padStart(2, '0')}:${String(el.duration % 60).padStart(2, '0')}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                </td>
-            </tr>`;
-
-    // Adiciona checkbox para cada paladino
+// Executa apenas na tela de paladinos
+if (window.location.href.includes('screen=knight')) {
+    // Carrega seleções salvas
     const selections = loadKnightSelections();
-    Object.keys(BuildingStatue.knights).forEach((knightId, index) => {
-        const knight = BuildingStatue.knights[knightId];
-        $html += `
-            <tr>
-                <td>
-                    <input type="checkbox" class="knight-select" data-knight="${knight.id}" 
-                        ${selections[knight.id] ? 'checked' : ''}>
-                    ${knight.name}
-                </td>
-            </tr>`;
-    });
+    
+    // Seleciona todos os blocos de paladinos (ajuste o selector conforme a estrutura HTML real)
+    const knightBlocks = $('.knight-box'); // Substitua '.knight-box' pelo selector correto da sua interface
 
-    $html += `
-        </tbody>
-    </table>
-    <br>
-    <small>
-        <strong>
-            Knight Training Auto v1.2 by<span style="color: red"> K I N G S </span>
-        </strong>
-    </small>`;
+    knightBlocks.each(function() {
+        const knightName = $(this).find('.knight-name').text(); // Ajuste para o selector do nome do paladino
+        const knightId = $(this).data('knight-id') || knightName; // Use o ID do paladino ou um identificador único
 
-    // Mostra o diálogo
-    Dialog.show('KnightsAuto', $html);
-
-    // Carrega duração salva
-    const savedDuration = localStorage.getItem('trainDuration') || 0;
-    $('#trainDuration').val(savedDuration);
-
-    // Evento para salvar duração
-    $('#trainDuration').on('change', function() {
-        localStorage.setItem('trainDuration', this.value);
+        // Adiciona checkbox ao lado do nome
+        $(this).find('.knight-name').after(`
+            <input type="checkbox" class="knight-select" data-knight="${knightId}" 
+                ${selections[knightId] ? 'checked' : ''}>
+        `);
     });
 
     // Evento para checkboxes
@@ -94,14 +56,18 @@ function saveKnightSelections(selections) {
         // Inicia treinamento automático se marcado
         if (isChecked) {
             startTraining(knightId);
+        } else {
+            stopTraining(knightId); // Opcional: para interromper treinamento se desmarcado
         }
     });
 
     // Função para iniciar treinamento
     function startTraining(knightId) {
-        const durationIndex = Number($('#trainDuration').val());
-        const knight = Object.values(BuildingStatue.knights).find(k => k.id === knightId);
-        
+        const knight = Object.values(BuildingStatue.knights).find(k => k.id === knightId || k.name === knightId);
+        if (!knight) return;
+
+        // Usa a primeira duração disponível como padrão (ajuste conforme necessário)
+        const durationIndex = 0; // Ou use uma configuração salva, como no script anterior
         TribalWars.post(
             game_data.link_base.replace('amp;screen=', '') + 'screen=statue&ajaxaction=regimen',
             null,
@@ -110,7 +76,7 @@ function saveKnightSelections(selections) {
                 regimen: knight.usable_regimens[durationIndex].id,
             },
             function() {
-                UI.SuccessMessage(`Training started for knight ${knight.name}`);
+                UI.SuccessMessage(`Training started for knight ${knight.name || knightId}`);
                 // Agenda próximo treinamento
                 setTimeout(() => {
                     if (loadKnightSelections()[knightId]) {
@@ -120,20 +86,23 @@ function saveKnightSelections(selections) {
             },
             function(r) {
                 console.error(r);
-                UI.ErrorMessage(`Failed to start training for ${knight.name}`);
+                UI.ErrorMessage(`Failed to start training for ${knight.name || knightId}`);
             }
         );
     }
 
-    // Inicia treinamento automático para todos os paladinos já selecionados
+    // Função para parar treinamento (opcional)
+    function stopTraining(knightId) {
+        // Aqui você pode adicionar lógica para cancelar o treinamento, se o jogo permitir
+        UI.InfoMessage(`Training stopped for knight ${knightId}`);
+    }
+
+    // Inicia treinamento automático para paladinos já selecionados
     Object.keys(selections).forEach(knightId => {
         if (selections[knightId]) {
             startTraining(knightId);
         }
     });
-})();
-
-// Executa o script em qualquer tela
-if (!window.location.href.includes('statue&mode=overview')) {
-    UI.InfoMessage('Knight Training Auto running in background');
+} else {
+    UI.InfoMessage('Knight Training running in background - Switch to Knight screen for configuration');
 }
