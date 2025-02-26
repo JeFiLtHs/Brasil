@@ -473,27 +473,16 @@ function prepareContent(groups, unitsTable) {
 // Render UI
 function renderUI(body) {
     const content = `
-        <div class="ra-single-village-snipe" id="raSingleVillageSnipe">
-            <h2>${tt(scriptData.name)}</h2>
-            <div class="ra-single-village-snipe-data">
-                ${body}
-            </div>
-            <small>
-                <strong>
-                    ${tt(scriptData.name)} ${scriptData.version}
-                </strong> -
-                <a href="${
-                    scriptData.authorUrl
-                }" target="_blank" rel="noreferrer noopener">
-                    ${scriptData.author}
-                </a> -
-                <a href="${
-                    scriptData.helpLink
-                }" target="_blank" rel="noreferrer noopener">
-                    ${tt('Help')}
-                </a>
-            </small>
+    <div class="ra-single-village-snipe" id="raSingleVillageSnipe">
+        <h2>${tt(scriptData.name)}</h2>
+        <div class="ra-single-village-snipe-data">
+            ${body}
         </div>
+        <style>
+            /* Estilos CSS */
+        </style>
+    </div>
+`;
         <style>
             .ra-single-village-snipe { position: relative; display: block; width: auto; height: auto; clear: both; margin: 0 auto 15px; padding: 10px; border: 1px solid #603000; box-sizing: border-box; background: #f4e4bc; }
 			.ra-single-village-snipe * { box-sizing: border-box; }
