@@ -1,19 +1,3 @@
-/*
- * Script Name: Single Village Snipe
- * Version: v2.3.3
- * Last Updated: 2024-09-17
- * Author: RedAlert
- * Author URL: https://twscripts.dev/
- * Author Contact: redalert_tw (Discord)
- * Approved: N/A (approved after the script approval rules change)
- * Approved Date: 2021-02-27
- * Mod: JawJaw
- */
-
-/*--------------------------------------------------------------------------------------
- * This script can NOT be cloned and modified without permission from the script author.
- --------------------------------------------------------------------------------------*/
-
 var scriptData = {
     prefix: 'singleVillageSnipe',
     name: 'Snipe aldeia única',
