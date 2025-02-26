@@ -16,12 +16,10 @@
 
 var scriptData = {
     prefix: 'singleVillageSnipe',
-    name: 'Single Village Snipe',
-    version: 'v2.3.2',
-    author: 'RedAlert',
-    authorUrl: 'https://twscripts.dev/',
-    helpLink:
-        'https://forum.tribalwars.net/index.php?threads/single-village-snipe.286731/',
+    name: 'Snipe aldeia única',
+    version: 'v1.0.2',
+    author: 'JeFilth',
+    
 };
 
 // User Input
