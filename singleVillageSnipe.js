@@ -1,8 +1,7 @@
 var scriptData = {
     prefix: 'singleVillageSnipe',
     name: 'Snipe aldeia única',
-    version: 'v1.0.2',
-    author: 'JeFilth',
+    
     
 };
 
