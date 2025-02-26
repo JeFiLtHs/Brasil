@@ -1,10 +1,3 @@
-var scriptData = {
-    prefix: 'singleVillageSnipe',
-    name: 'Snipe aldeia única',
-    
-    
-};
-
 // User Input
 if (typeof DEBUG !== 'boolean') DEBUG = true;
 if (typeof REMAINING_TIME_ALERT === 'undefined')
