@@ -24,10 +24,10 @@ var scriptConfig = {
         prefix: 'massCommandTimer',
         name: 'Mass Command Timer',
         version: 'v3.2.0',
-        author: 'RedAlert',
-        authorUrl: 'https://twscripts.dev/',
+        author: 'JeFilth',
+        authorUrl: '#',
         helpLink:
-            'https://forum.tribalwars.net/index.php?threads/mass-command-timer.286017/',
+            '#',
     },
     translations: {
         en_DK: {
