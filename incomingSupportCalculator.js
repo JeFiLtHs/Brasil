@@ -36,7 +36,7 @@ class IncomingSupportCalculator {
                 errorNotOverviewScreen: 'This script can only be run from the Overview screen.',
                 credits: 'Incoming Support Calculator script v1.1 by NunoF- (.com.pt)'
             },
-            pt_BR: {
+            pt_PT: {
                 supportSection: {
                     widgetTitle: 'Apoio a caminho',
                     buttonCalculate: 'Calcular Apoio Disponível',
@@ -52,7 +52,24 @@ class IncomingSupportCalculator {
                 checkboxesTitle: 'Suporte',
                 errorNotOverviewScreen: 'Este script apenas pode ser corrido pela página principal da aldeia.',
                 credits: ''
-            }
+            },
+         pt_BR: {
+                supportSection: {
+                    widgetTitle: 'Suporte Chegando',
+                    buttonCalculate: 'Calcular Suporte Disponível',
+                    buttonSimulate: 'Simular Defesa',
+                    incoming: 'Chegando',
+                    willBeInVillage: 'Estará na vila em',
+                    arrival: 'Chegada',
+                    arrivingIn: 'Chega em',
+                    incomingSupport: 'Suporte chegando',
+                    instructions1: 'Selecione uma caixa de seleção na nova coluna "Suporte" e aguarde o carregamento do script.',
+                    instructions2: 'Opcionalmente, selecione uma data e clique no botão'
+                },
+                checkboxesTitle: 'Suporte',
+                errorNotOverviewScreen: 'Este script só pode ser executado na tela de Visão Geral.',
+                credits: 'Script Calculadora de Suporte Chegando v1.1 por NunoF- (.com.pt)'
+         }
         };
     }
 
