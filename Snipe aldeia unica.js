@@ -1,10 +1,10 @@
 /*
- * Script Name: Single Village Snipe
+ * Script Name: Snipe aldeia única
  * Version: v2.3.3
  * Last Updated: 2024-09-17
- * Author: RedAlert
- * Author URL: https://twscripts.dev/
- * Author Contact: redalert_tw (Discord)
+ * Author: JeFilth
+ * Author URL: https://#/
+ * Author Contact: Jefilth (Discord)
  * Approved: N/A (approved after the script approval rules change)
  * Approved Date: 2021-02-27
  * Mod: JawJaw
@@ -16,12 +16,12 @@
 
 var scriptData = {
     prefix: 'singleVillageSnipe',
-    name: 'Single Village Snipe',
+    name: 'Snipe aldeia única',
     version: 'v2.3.2',
-    author: 'RedAlert',
-    authorUrl: 'https://twscripts.dev/',
+    author: 'JeFilth',
+    authorUrl: 'https://#/',
     helpLink:
-        'https://forum.tribalwars.net/index.php?threads/single-village-snipe.286731/',
+        '#',
 };
 
 // User Input
