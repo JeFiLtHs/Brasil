@@ -34,7 +34,7 @@ class IncomingSupportCalculator {
                 },
                 checkboxesTitle: 'Support',
                 errorNotOverviewScreen: 'This script can only be run from the Overview screen.',
-                credits: 'Incoming Support Calculator script v1.1 by NunoF- (.com.pt)'
+                credits: ''
             },
             pt_PT: {
                 supportSection: {
