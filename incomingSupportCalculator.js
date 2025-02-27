@@ -36,7 +36,7 @@ class IncomingSupportCalculator {
                 errorNotOverviewScreen: 'This script can only be run from the Overview screen.',
                 credits: 'Incoming Support Calculator script v1.1 by NunoF- (.com.pt)'
             },
-            pt_PT: {
+            pt_BR: {
                 supportSection: {
                     widgetTitle: 'Apoio a caminho',
                     buttonCalculate: 'Calcular Apoio Disponível',
@@ -51,7 +51,7 @@ class IncomingSupportCalculator {
                 },
                 checkboxesTitle: 'Suporte',
                 errorNotOverviewScreen: 'Este script apenas pode ser corrido pela página principal da aldeia.',
-                credits: 'Calculador de Apoio a Caminho v1.1 por NunoF- (.com.pt)'
+                credits: ''
             }
         };
     }
