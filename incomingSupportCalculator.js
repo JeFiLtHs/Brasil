@@ -68,7 +68,7 @@ class IncomingSupportCalculator {
                 },
                 checkboxesTitle: 'Suporte',
                 errorNotOverviewScreen: 'Este script só pode ser executado na tela de Visão Geral.',
-                credits: 'Script Calculadora de Suporte Chegando v1.1 por NunoF- (.com.pt)'
+                credits: ''
          }
         };
     }
