@@ -24,6 +24,9 @@ var links = [];
 var cleanLinks = [];
 var stillShortage = [];
 var stillExcess = [];
+var isAutomationEnabled = false; // Estado da automação
+var autoClickInterval = null; // Intervalo para cliques automáticos
+var pageRefreshInterval = null; // Intervalo para atualização da página
 
 function init() {
     warehouseCapacity = [];
@@ -48,6 +51,9 @@ function init() {
     cleanLinks = [];
     stillShortage = [];
     stillExcess = [];
+    isAutomationEnabled = false;
+    autoClickInterval = null;
+    pageRefreshInterval = null;
 }
 
 function cleanup() {
@@ -66,6 +72,9 @@ function cleanup() {
     merchantOrders = [];
     links = [];
     cleanLinks = [];
+    isAutomationEnabled = false;
+    if (autoClickInterval) clearInterval(autoClickInterval);
+    if (pageRefreshInterval) clearInterval(pageRefreshInterval);
 }
 
 //base language if not on a particular server = English
@@ -441,20 +450,29 @@ function sendResource(sourceID, targetID, woodAmount, stoneAmount, ironAmount, r
     }, e, function (e) {
         UI.SuccessMessage(e.message);
         console.log(e.message);
-        $(':button[id^="building"]')[0].focus();
+        if (!isAutomationEnabled) {
+            $(':button[id^="building"]').first().focus();
+        }
     }, !1);
     $(':button[id^="building"]').prop('disabled', true);
     setTimeout(function () {
         $(':button[id^="building"]').prop('disabled', false);
         console.log("undisabled buttons");
         if ($("#tableSend tr").length <= 2) {
-            alert("Finished sending!");
+            UI.SuccessMessage("Finished sending!");
             if ($(".btn-pp").length > 0) {
                 $(".btn-pp").remove();
             }
-            throw Error("Done.");
+            if (isAutomationEnabled) {
+                clearInterval(autoClickInterval);
+                UI.InfoMessage("All resources sent. Waiting for next refresh.");
+            } else {
+                throw Error("Done.");
+            }
         }
-        $(':button[id^="building"]')[0].focus();
+        if (!isAutomationEnabled) {
+            $(':button[id^="building"]').first().focus();
+        }
     }, 150);
 }
 
@@ -956,6 +974,7 @@ function displayEverything() {
                     htmlCode = `<div id="restart">${totalsAndAverages}</div>
                 <div id="sendResources" class="flex-container sophHeader" style="position: relative">
                     <button class="sophRowA collapsible" style="width: 250px;min-width: 230px;">Open settings menu</button>
+                    <button id="toggleAutomation" class="btn btnSophie" style="margin-left: 10px;">Enable Automation</button>
                     <div class="content submenu" style="width: 500px;height:500px;z-index:99999">
                         <form id="settings">
                             <table style="border-spacing: 2px;">
@@ -1093,7 +1112,10 @@ function createList() {
         listHTML += `
         <tr ${tempRow} height="40">
             <td><a href="${sourceURL}" class="sophLink">${sourceName} </a></td>
-            <td> <a href="${targetURL}" class="sophLink" data-toggle="tooltip" title="Wood in WH: ${targetWood} &#10;Clay in WH: ${targetStone}&#10;Iron in WH: ${targetIron}&#10;Warehouse capacity: ${targetCapacity}">${targetName}</a> </td>
+            <td> <a href="${targetURL}" class="sophLink" data-toggle="tooltip" title="Wood in WH: ${targetWood} 
+Clay in WH: ${targetStone}
+Iron in WH: ${targetIron}
+Warehouse capacity: ${targetCapacity}">${targetName}</a> </td>
             <td width="50" style="text-align:center">${cleanLinks[i].distance}</td>
             <td width="50" style="text-align:center">${cleanLinks[i].wood}<span class="icon header wood"> </span></td>
             <td width="50" style="text-align:center">${cleanLinks[i].stone}<span class="icon header stone"> </span></td>
@@ -1131,162 +1153,4 @@ function checkDistance(x1, y1, x2, y2) {
 }
 
 function addDistanceToArray(array) {
-    for (let i = 0; i < array.length; i++) {
-        for (let property in villagesData) {
-            if (villagesData[property].id == array[i].source) {
-                sourceName = villagesData[property].name;
-                sourceURL = villagesData[property].url;
-            }
-        }
-        for (let property in villagesData) {
-            if (villagesData[property].id == array[i].target) {
-                targetName = villagesData[property].name;
-                targetURL = villagesData[property].url;
-            }
-        }
-        array[i].distance = checkDistance(sourceName.match(/(\d+)\|(\d+)/)[1], sourceName.match(/(\d+)\|(\d+)/)[2], targetName.match(/(\d+)\|(\d+)/)[1], targetName.match(/(\d+)\|(\d+)/)[2]);
-    }
-    return array;
-}
-
-function numberWithCommas(x) {
-    x = x.toString();
-    var pattern = /(-?\d+)(\d{3})/;
-    while (pattern.test(x))
-        x = x.replace(pattern, "$1.$2");
-    return x;
-}
-
-function showStats() {
-    htmlStats = "<div class='sophRowA' style='width:800px' ><center><h1>Shortages:</h1><table class='sophHeader'><tr class='sophHeader'><td>Village name</td><td>Res</td></tr>";
-    for (let i = 0; i < stillShortage.length; i++) {
-        console.log("Creating line " + i + "of the list");
-        if (i % 2 == 0) {
-            tempRow = " id='" + i + "' class='sophRowB'";
-        } else {
-            tempRow = " id='" + i + "' class='sophRowA'";
-        }
-        htmlStats += `
-        <tr ${tempRow} height="40">
-            <td>${stillShortage[i][0]}</td>
-            <td>${stillShortage[i][1][0].wood} , ${stillShortage[i][1][1].stone} , ${stillShortage[i][1][2].iron}</td>
-        </tr>`;
-    }
-    htmlStats += "</table><h1>Excesses:</h1><table class='sophHeader'><tr class='sophHeader'><td>Village name</td><td>Res</td></tr>";
-    for (let i = 0; i < stillExcess.length; i++) {
-        console.log("Creating line " + i + "of the list");
-        if (i % 2 == 0) {
-            tempRow = " id='" + i + "' class='sophRowB'";
-        } else {
-            tempRow = " id='" + i + "' class='sophRowA'";
-        }
-        htmlStats += `
-        <tr ${tempRow} height="40">
-            <td>${stillExcess[i][0]}</td>
-            <td>${stillExcess[i][1][0].wood} , ${stillExcess[i][1][1].stone} , ${stillExcess[i][1][2].iron}</td>
-        </tr>`;
-    }
-    htmlStats += "</table></center></div>";
-    Dialog.show("content", htmlStats);
-}
-
-function makeThingsCollapsible() {
-    var coll = $(".collapsible");
-    for (var i = 0; i < coll.length; i++) {
-        coll[i].addEventListener("click", function () {
-            this.classList.toggle("active");
-            var content = this.nextElementSibling;
-            if (content.style.maxHeight) {
-                content.style.maxHeight = null;
-            } else {
-                content.style.maxHeight = content.scrollHeight + "px";
-            }
-        });
-    }
-}
-
-function saveSettings() {
-    tempArray = $("#settings").serializeArray();
-    if ($("input[name='isMinting']")[0].checked == true) {
-        settings.isMinting = true;
-        settings.lowPoints = parseInt(tempArray[1].value);
-        settings.highPoints = parseInt(tempArray[2].value);
-        settings.highFarm = parseInt(tempArray[3].value);
-        settings.builtOutPercentage = parseFloat(tempArray[4].value);
-        settings.needsMorePercentage = parseFloat(tempArray[5].value);
-    } else {
-        settings.isMinting = false;
-        settings.lowPoints = parseInt(tempArray[0].value);
-        settings.highPoints = parseInt(tempArray[1].value);
-        settings.highFarm = parseInt(tempArray[2].value);
-        settings.builtOutPercentage = parseFloat(tempArray[3].value);
-        settings.needsMorePercentage = parseFloat(tempArray[4].value);
-    }
-    localStorage.setItem("settingsWHBalancerSophie", JSON.stringify(settings));
-    $(".flex-container").remove();
-    $("div[id*='restart']").remove();
-    $("div[id*='sendResources']").remove();
-    init();
-    displayEverything();
-}
-
-function sliderChange(name, val) {
-    document.getElementById(name).innerHTML = val;
-}
-
-function resAfterBalance() {
-    resBalancedHTML = `<div class='sophRowA' style='width:800px' ><table style='width:100%'><tr class="sophHeader"><td>Village</td><td>Points</td><td>Merchants left</td><td colspan="3">Resources</td><td>WH capacity</td></tr>`;
-    for (var i = 0; i < villagesData.length; i++) {
-        thisMerchantLeft = villagesData[i].availableMerchants;
-        if (incomingRes[villagesData[i].id] != undefined) {
-            console.log("adding res underway to target");
-            thisVillageTotalWood = incomingRes[villagesData[i].id].wood + parseInt(villagesData[i].wood);
-            thisVillageTotalStone = incomingRes[villagesData[i].id].stone + parseInt(villagesData[i].stone);
-            thisVillageTotalIron = incomingRes[villagesData[i].id].iron + parseInt(villagesData[i].iron);
-        } else {
-            thisVillageTotalWood = parseInt(villagesData[i].wood);
-            thisVillageTotalStone = parseInt(villagesData[i].stone);
-            thisVillageTotalIron = parseInt(villagesData[i].iron);
-        }
-        for (var j = 0; j < cleanLinks.length; j++) {
-            if (cleanLinks[j].target == villagesData[i].id) {
-                console.log('adding rows to be received to the res at the target');
-                thisVillageTotalWood += cleanLinks[j].wood;
-                thisVillageTotalStone += cleanLinks[j].stone;
-                thisVillageTotalIron += cleanLinks[j].iron;
-            }
-            if (cleanLinks[j].source == villagesData[i].id) {
-                console.log('addings rows to be sent to the res at the target');
-                thisVillageTotalWood -= cleanLinks[j].wood;
-                thisVillageTotalStone -= cleanLinks[j].stone;
-                thisVillageTotalIron -= cleanLinks[j].iron;
-                thisMerchantLeft -= (cleanLinks[j].wood + cleanLinks[j].stone + cleanLinks[j].iron) / 1000;
-            }
-        }
-        if (i % 2 == 0) {
-            tempRow = "class='sophRowB'";
-        } else {
-            tempRow = "class='sophRowA'";
-        }
-        resBalancedHTML += `
-        <tr ${tempRow}>
-            <td>${villagesData[i].name}</td>
-            <td>${villagesData[i].points}</td>
-            <td style="text-align:right;padding-right:2em">
-                ${thisMerchantLeft + "/" + villagesData[i].totalMerchants}
-            </td>
-            <td>
-                <span class="res wood" style="padding-left:1em">&nbsp;</span>${thisVillageTotalWood}
-            </td>
-            <td>
-                <span class="res stone" style="padding-left:1em">&nbsp;</span>${thisVillageTotalStone}
-            </td>
-            <td>
-                <span class="res iron" style="padding-left:1em">&nbsp;</span>${thisVillageTotalIron}
-            </td>
-            <td style="text-align:right">${villagesData[i].warehouseCapacity}</td>
-        </tr>`;
-    }
-    resBalancedHTML += `</table></div>`;
-    Dialog.show('content', resBalancedHTML);
-}
+   
