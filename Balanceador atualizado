@@ -1,0 +1,807 @@
+// Mass Scavenging by Sophie "Shinko to Kuma" (Revised Version)
+
+// Aviso inicial de conformidade
+UI.InfoMessage("Este script auxilia na coleta em massa no Tribal Wars. Use com cuidado para respeitar as regras do jogo.", 10000);
+
+// Server time parsing
+const serverTimeTemp = $("#serverDate")[0].innerText + " " + $("#serverTime")[0].innerText;
+const serverTime = serverTimeTemp.match(/^([0][1-9]|[12][0-9]|3[01])[\/\-]([0][1-9]|1[012])[\/\-](\d{4})( (0?[0-9]|[1][0-9]|[2][0-3])[:]([0-5][0-9])([:]([0-5][0-9]))?)?$/);
+const serverDate = Date.parse(serverTime[3] + "/" + serverTime[2] + "/" + serverTime[1] + serverTime[4]);
+const is_mobile = !!navigator.userAgent.match(/iphone|android|blackberry/ig) || false;
+
+// Relocate to mass scavenging page
+if (window.location.href.indexOf('screen=place&mode=scavenge_mass') < 0) {
+    window.location.assign(game_data.link_base_pure + "place&mode=scavenge_mass");
+}
+
+// Remove existing UI if present
+$("#massScavengeSophie").remove();
+
+// Initialize global variables
+let version = typeof version === 'undefined' ? "new" : version;
+
+// Translations
+const translations = {
+    "en_US": [
+        "Mass scavenging",
+        "Select unit types/ORDER to scavenge with (drag units to order)",
+        "Select categories to use",
+        "When do you want your scav runs to return (approximately)?",
+        "Runtime here",
+        "Calculate runtimes for each page",
+        "Creator: ",
+        "Mass scavenging: send per 50 villages",
+        "Launch group "
+    ],
+    "pt_BR": [
+        "Coletar em massa",
+        "Selecione os tipos de unidades/ordem para coletar (arraste para ordenar)",
+        "Selecione as categorias a usar",
+        "Quando você quer que as coletas retornem (aproximadamente)?",
+        "Duração aqui",
+        "Calcular durações para cada página",
+        "Criador: ",
+        "Coletar em massa: enviar por 50 aldeias",
+        "Lançar grupo "
+    ],
+    "ro_RO": [
+        "Curatare in masa",
+        "Selecteaza tipul unitatii/ORDONEAZA sa curete cu (trage unitatea pentru a ordona)",
+        "Selecteaza categoria",
+        "Cand vrei sa se intoarca trupele de la curatare (aproximativ)",
+        "Durata aici",
+        "Calculeaza durata pentru fiecare pagina",
+        "Creator: ",
+        "Cueatare in masa: trimite pe 50 de sate",
+        "Lanseaza grup "
+    ],
+    "ar_AE": [
+        "الاغارات",
+        "اختار الوحدات المستخدمة فى الاغارات",
+        "اختار انواع الاغارات المستخدمة",
+        "ما المده المده الزمنيه المراد ارسال الاغارات بها",
+        "ضع االمده هنا",
+        "حساب المده لكل صفحه",
+        "Creator: ",
+        "الاغارات : ترسل لكل 50 قريه على حدى",
+        "تشغيل المجموعة"
+    ],
+    "el_GR": [
+        "Μαζική σάρωση",
+        "Επιλέξτε τις μονάδες με τις οποίες θα κάνετε σάρωση",
+        "Επιλέξτε επίπεδα σάρωσης που θα χρησιμοποιηθούν",
+        "Χρόνος Σάρωσης (Ώρες.Λεπτά)",
+        "Χρόνος",
+        "Υπολόγισε χρόνους σάρωσης για κάθε σελίδα.",
+        "Δημιουργός: ",
+        "Μαζική σάρωση: Αποστολή ανα 50 χωριά",
+        "Αποστολή ομάδας "
+    ],
+    "nl_NL": [
+        "Massa rooftochten",
+        "Kies welke troeptypes je wil mee roven, sleep om prioriteit te ordenen",
+        "Kies categorieën die je wil gebruiken",
+        "Wanneer wil je dat je rooftochten terug zijn?",
+        "Looptijd hier invullen",
+        "Bereken rooftochten voor iedere pagina",
+        "Scripter: ",
+        "Massa rooftochten: verstuur per 50 dorpen",
+        "Verstuur groep "
+    ],
+    "it_IT": [
+        "Rovistamento di massa",
+        "Seleziona i tipi da unità con cui rovistare",
+        "Seleziona quali categorie utilizzare",
+        "Inserisci la durata voluta dei rovistamenti in ORE",
+        "Inserisci qui il tempo",
+        "Calcola tempi per tutte le pagine",
+        "Creatore: ",
+        "Rovistamento di massa: manda su 50 villaggi",
+        "Lancia gruppo"
+    ]
+};
+const langShinko = translations[game_data.locale] || translations["en_US"];
+
+// Load settings
+const loadSettings = () => {
+    // Troop types
+    let troopTypeEnabled = JSON.parse(localStorage.getItem("troopTypeEnabled"));
+    if (!troopTypeEnabled) {
+        console.log("No troopTypeEnabled found, creating new one");
+        troopTypeEnabled = {};
+        game_data.units.forEach(unit => {
+            if (!["militia", "snob", "ram", "catapult", "spy", "knight"].includes(unit)) {
+                troopTypeEnabled[unit] = false;
+            }
+        });
+        localStorage.setItem("troopTypeEnabled", JSON.stringify(troopTypeEnabled));
+    }
+
+    // Keep home units
+    let keepHome = JSON.parse(localStorage.getItem("keepHome"));
+    if (!keepHome) {
+        console.log("No keepHome found, creating");
+        keepHome = { spear: 0, sword: 0, axe: 0, archer: 0, light: 0, marcher: 0, heavy: 0 };
+        localStorage.setItem("keepHome", JSON.stringify(keepHome));
+    }
+
+    // Categories enabled
+    let categoryEnabled = JSON.parse(localStorage.getItem("categoryEnabled"));
+    if (!categoryEnabled) {
+        console.log("No categoryEnabled found, creating");
+        categoryEnabled = [true, true, true, true];
+        localStorage.setItem("categoryEnabled", JSON.stringify(categoryEnabled));
+    }
+
+    // Priority
+    let prioritiseHighCat = JSON.parse(localStorage.getItem("prioritiseHighCat"));
+    if (prioritiseHighCat === null) {
+        console.log("No prioritiseHighCat found, creating");
+        prioritiseHighCat = false;
+        localStorage.setItem("prioritiseHighCat", JSON.stringify(prioritiseHighCat));
+    }
+
+    // Time element
+    let timeElement = localStorage.getItem("timeElement") || "Date";
+    let tempElementSelection = timeElement;
+
+    // Send order
+    let sendOrder = JSON.parse(localStorage.getItem("sendOrder"));
+    if (!sendOrder) {
+        console.log("No sendOrder found, creating");
+        sendOrder = game_data.units.filter(unit => !["militia", "snob", "ram", "catapult", "spy", "knight"].includes(unit));
+        localStorage.setItem("sendOrder", JSON.stringify(sendOrder));
+    }
+
+    // Runtimes
+    let runTimes = JSON.parse(localStorage.getItem("runTimes"));
+    if (!runTimes) {
+        console.log("No runTimes found, creating");
+        runTimes = { off: 4, def: 3 };
+        localStorage.setItem("runTimes", JSON.stringify(runTimes));
+    }
+
+    return { troopTypeEnabled, keepHome, categoryEnabled, prioritiseHighCat, timeElement, tempElementSelection, sendOrder, runTimes };
+};
+
+const { troopTypeEnabled, keepHome, categoryEnabled, prioritiseHighCat, timeElement, tempElementSelection, sendOrder, runTimes } = loadSettings();
+
+const premiumBtnEnabled = typeof premiumBtnEnabled === 'undefined' ? false : premiumBtnEnabled;
+
+// URL for requests
+const URLReq = game_data.player.sitter > 0 ? `game.php?t=${game_data.player.id}&screen=place&mode=scavenge_mass` : "game.php?&screen=place&mode=scavenge_mass";
+
+// Global variables
+let arrayWithData;
+let enabledCategories = [];
+let availableUnits = [];
+let squad_requests = [];
+let squad_requests_premium = [];
+let scavengeInfo;
+let duration_factor = 0;
+let duration_exponent = 0;
+let duration_initial_seconds = 0;
+let categoryNames = JSON.parse("[" + $.find('script:contains("ScavengeMassScreen")')[0].innerHTML.match(/\{.*\:\{.*\:.*\}\}/g) + "]")[0];
+let time = { off: 0, def: 0 };
+let estimatedLoot = 0;
+
+// Tribal Wars theme CSS
+const cssClassesSophie = `
+<style>
+    #massScavengeSophie {
+        background-image: url('https://dsen.innogamescdn.com/asset/cf2959e7/graphic/screen/table.png');
+        background-size: cover;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        font-family: Verdana, Arial, sans-serif;
+        font-size: 12px;
+    }
+    .sophRowA {
+        background-color: #f4e4bc;
+        color: black;
+    }
+    .sophRowB {
+        background-color: #fff5da;
+        color: black;
+    }
+    .sophHeader {
+        background-color: #c6a768;
+        font-weight: bold;
+        color: #803000;
+    }
+    .sophLink {
+        color: #803000;
+    }
+    .btnSophie {
+        background-image: linear-gradient(#c6a768, #947a62);
+        border: 1px solid #803000;
+        color: white;
+        border-radius: 5px;
+    }
+    .btnSophie:hover {
+        background-image: linear-gradient(#d6b778, #a68a72);
+    }
+    #x {
+        position: absolute;
+        background-image: url('https://dsen.innogamescdn.com/asset/cf2959e7/graphic/unit/unit_spear.png');
+        background-size: cover;
+        color: transparent;
+        top: 0px;
+        right: 0px;
+        width: 30px;
+        height: 30px;
+    }
+    #cog {
+        position: absolute;
+        background: #f4e4bc;
+        color: #803000;
+        top: 0px;
+        right: 30px;
+        width: 30px;
+        height: 30px;
+    }
+    .vis {
+        border-radius: 5px;
+    }
+    #massScavengeSophieTable td, #massScavengeSophieFinalTable td {
+        padding: 8px;
+    }
+    .error-highlight {
+        border: 2px solid #ff0000;
+    }
+    @media (max-width: 600px) {
+        #massScavengeSophie {
+            width: 100%;
+            font-size: 10px;
+        }
+        #massScavengeSophieTable td, #massScavengeSophieFinalTable td {
+            padding: 5px;
+        }
+    }
+</style>`;
+
+// Add CSS to page
+$("#contentContainer").eq(0).prepend(cssClassesSophie);
+$("#mobileHeader").eq(0).prepend(cssClassesSophie);
+
+// AJAX helper
+$.getAll = function (urls, onLoad, onDone, onError) {
+    let numDone = 0;
+    let lastRequestTime = 0;
+    const minWaitTime = 200;
+    const loadNext = () => {
+        if (numDone === urls.length) {
+            onDone();
+            return;
+        }
+        const now = Date.now();
+        const timeElapsed = now - lastRequestTime;
+        if (timeElapsed < minWaitTime) {
+            setTimeout(loadNext, minWaitTime - timeElapsed);
+            return;
+        }
+        console.log('Getting ', urls[numDone]);
+        $("#progress").css("width", `${(numDone + 1) / urls.length * 100}%`);
+        lastRequestTime = now;
+        $.get(urls[numDone])
+            .done(data => {
+                try {
+                    onLoad(numDone, data);
+                    numDone++;
+                    loadNext();
+                } catch (e) {
+                    onError(e);
+28();
+            })
+            .fail(xhr => onError(xhr));
+    };
+};
+
+// Fetch scavenging data
+const getData = () => {
+    $("#massScavengeSophie").remove();
+    const cachedData = localStorage.getItem("scavengeData");
+    const cacheTime = localStorage.getItem("scavengeDataTime");
+    if (cachedData && cacheTime && Date.now() - cacheTime < 3600000) {
+        scavengeInfo = JSON.parse(cachedData);
+        processData();
+    } else {
+        const URLs = [];
+        $.get(URLReq, data => {
+            const amountOfPages = $(".paged-nav-item").length > 0 ? parseInt($(".paged-nav-item")[$(".paged-nav-item").length - 1].href.match(/page=(\d+)/)[1]) : 0;
+            for (let i = 0; i <= amountOfPages; i++) {
+                URLs.push(URLReq + "&page=" + i);
+            }
+            const tempData = JSON.parse($(data).find('script:contains("ScavengeMassScreen")').html().match(/\{.*\:\{.*\:.*\}\}/g)[0]);
+            duration_exponent = tempData[1].duration_exponent;
+            duration_factor = tempData[1].duration_factor;
+            duration_initial_seconds = tempData[1].duration_initial_seconds;
+            arrayWithData = "[";
+            $.getAll(URLs,
+                (i, pageData) => {
+                    const thisPageData = $(pageData).find('script:contains("ScavengeMassScreen")').html().match(/\{.*\:\{.*\:.*\}\}/g)[2];
+                    arrayWithData += thisPageData + ",";
+                },
+                () => {
+                    arrayWithData = arrayWithData.slice(0, -1) + "]";
+                    scavengeInfo = JSON.parse(arrayWithData);
+                    localStorage.setItem("scavengeData", JSON.stringify(scavengeInfo));
+                    localStorage.setItem("scavengeDataTime", Date.now());
+                    processData();
+                },
+                error => console.error(error)
+            );
+        });
+    }
+};
+
+// Process fetched data
+const processData = () => {
+    let count = 0;
+    estimatedLoot = 0;
+    for (let i = 0; i < scavengeInfo.length; i++) {
+        calculateHaulCategories(scavengeInfo[i]);
+        count++;
+    }
+    if (count === scavengeInfo.length) {
+        const squads = {};
+        const squads_premium = {};
+        let per200 = 0;
+        let groupNumber = 0;
+        squads[groupNumber] = [];
+        squads_premium[groupNumber] = [];
+        for (let k = 0; k < squad_requests.length; k++) {
+            if (per200 === 200) {
+                groupNumber++;
+                squads[groupNumber] = [];
+                squads_premium[groupNumber] = [];
+                per200 = 0;
+            }
+            per200++;
+            squads[groupNumber].push(squad_requests[k]);
+            squads_premium[groupNumber].push(squad_requests_premium[k]);
+        }
+        let htmlWithLaunchButtons = `
+        <div id="massScavengeFinal" class="ui-widget-content" style="position:fixed;background-color:#F4E4BC;cursor:move;z-index:50;border-radius:10px;">
+            <button class="btn" id="x" onclick="closeWindow('massScavengeFinal')"></button>
+            <table id="massScavengeSophieFinalTable" class="vis" border="1" style="width:100%;background-color:#F4E4BC;border-color:#ecd7ac">
+                <tr>
+                    <td colspan="10" class="sophHeader" style="text-align:center;">
+                        <h3><center style="margin:10px"><u><font color="#803000">${langShinko[7]}</font></u></center></h3>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="10" style="text-align:center;background-color:#fff5da;">
+                        <p><font color="#803000">Recursos estimados: ${Math.round(estimatedLoot)} unidades</font></p>
+                    </td>
+                </tr>`;
+        for (let s = 0; s < Object.keys(squads).length; s++) {
+            htmlWithLaunchButtons += `
+            <tr id="sendRow${s}" style="text-align:center;background-color:#fff5da;">
+                <td style="text-align:center;"><center><input type="button" class="btn btnSophie" id="sendMass" onclick="sendGroup(${s},false)" value="${langShinko[8]}${s + 1}"></center></td>
+                <td style="text-align:center;"><center><input type="button" class="btn btn-pp btn-send-premium" id="sendMassPremium" onclick="sendGroup(${s},true)" value="${langShinko[8]}${s + 1} WITH PREMIUM" style="display:none"></center></td>
+            </tr>`;
+        }
+        htmlWithLaunchButtons += "</table></div>";
+        $(".maincell").eq(0).prepend(htmlWithLaunchButtons);
+        $("#mobileContent").eq(0).prepend(htmlWithLaunchButtons);
+        if (!is_mobile) {
+            $("#massScavengeFinal").draggable();
+        }
+        for (let prem = 0; prem < $("#sendMassPremium").length; prem++) {
+            if (premiumBtnEnabled) {
+                $($("#sendMassPremium")[prem]).show();
+            }
+        }
+        $("#sendMass")[0].focus();
+    }
+};
+
+// Main UI
+const html = `
+<div id="massScavengeSophie" class="ui-widget-content" style="width:600px;cursor:move;z-index:50;">
+    <button class="btn" id="cog" onclick="settings()">⚙️</button>
+    <button class="btn" id="x" onclick="closeWindow('massScavengeSophie')"></button>
+    <table id="massScavengeSophieTable" class="vis" border="1" style="width:100%;background-color:#F4E4BC;border-color:#ecd7ac">
+        <tr>
+            <td colspan="10" class="sophHeader" style="text-align:center;">
+                <h3><center style="margin:10px"><u><font color="#803000">${langShinko[0]}</font></u></center></h3>
+            </td>
+        </tr>
+        <tr style="background-color:#fff5da;">
+            <td style="text-align:center;" class="sophHeader" colspan="15">
+                <h3><center style="margin:10px"><u><font color="#803000">${langShinko[1]}</font></u></center></h3>
+            </td>
+        </tr>
+        <tr id="imgRow"></tr>
+    </table>
+    <hr>
+    <table class="vis" border="1" style="width:100%;background-color:#F4E4BC;border-color:#ecd7ac">
+        <tbody>
+            <tr style="background-color:#fff5da;">
+                <td style="text-align:center;" class="sophHeader" colspan="4">
+                    <h3><center style="margin:10px"><u><font color="#803000">${langShinko[2]}</font></u></center></h3>
+                </td>
+            </tr>
+            <tr id="categories" style="text-align:center;" class="sophHeader">
+                <td style="text-align:center;padding:10px;" title="${langShinko[2]}: Menor capacidade, mais rápido"><font color="#803000">${categoryNames[1].name}</font></td>
+                <td style="text-align:center;padding:10px;" title="${langShinko[2]}: Capacidade média, tempo médio"><font color="#803000">${categoryNames[2].name}</font></td>
+                <td style="text-align:center;padding:10px;" title="${langShinko[2]}: Boa capacidade, mais lento"><font color="#803000">${categoryNames[3].name}</font></td>
+                <td style="text-align:center;padding:10px;" title="${langShinko[2]}: Maior capacidade, muito lento"><font color="#803000">${categoryNames[4].name}</font></td>
+            </tr>
+            <tr>
+                <td style="text-align:center;background-color:#fff5da;"><center><input type="checkbox" ID="category1" name="cat1"></center></td>
+                <td style="text-align:center;background-color:#fff5da;"><center><input type="checkbox" ID="category2" name="cat2"></center></td>
+                <td style="text-align:center;background-color:#fff5da;"><center><input type="checkbox" ID="category3" name="cat3"></center></td>
+                <td style="text-align:center;background-color:#fff5da;"><center><input type="checkbox" ID="category4" name="cat4"></center></td>
+            </tr>
+        </tbody>
+    </table>
+    <hr>
+    <table class="vis" border="1" style="width:100%;background-color:#F4E4BC;border-color:#ecd7ac">
+        <tr id="runtimesTitle" style="text-align:center;" class="sophHeader">
+            <td colspan="3" style="text-align:center;"><center style="margin:10px"><font color="#803000">${langShinko[3]}</font></center></td>
+        </tr>
+        <tr id="runtimes" style="text-align:center;" class="sophHeader">
+            <td style="background-color:#c6a768;"></td>
+            <td style="text-align:center;padding:10px;"><font color="#803000">Aldeias ofensivas</font></td>
+            <td style="text-align:center;padding:10px;"><font color="#803000">Aldeias defensivas</font></td>
+        </tr>
+        <tr>
+            <td style="width:22px;background-color:#fff5da;padding:5px;"><input type="radio" ID="timeSelectorDate" name="timeSelector"></td>
+            <td style="text-align:center;background-color:#fff5da;padding:5px;"><input type="date" id="offDay" name="offDay" value="${setDayToField(runTimes.off)}"><input type="time" id="offTime" name="offTime" value="${setTimeToField(runTimes.off)}"></td>
+            <td style="text-align:center;background-color:#fff5da;padding:5px;"><input type="date" id="defDay" name="defDay" value="${setDayToField(runTimes.def)}"><input type="time" id="defTime" name="defTime" value="${setTimeToField(runTimes.def)}"></td>
+        </tr>
+        <tr>
+            <td style="width:22px;background-color:#fff5da;padding:5px;"><input type="radio" ID="timeSelectorHours" name="timeSelector"></td>
+            <td style="text-align:center;background-color:#fff5da;padding:5px;"><input type="text" class="runTime_off" style="background-color:#fff5da;color:#803000;" value="${runTimes.off}" onclick="this.select();"></td>
+            <td style="text-align:center;background-color:#fff5da;padding:5px;"><input type="text" class="runTime_def" style="background-color:#fff5da;color:#803000;" value="${runTimes.def}" onclick="this.select();"></td>
+        </tr>
+        <tr>
+            <td style="width:22px;background-color:#fff5da;padding:5px;"></td>
+            <td style="text-align:center;background-color:#fff5da;padding:5px;"><font color="#803000"><span id="offDisplay"></span></font></td>
+            <td style="text-align:center;background-color:#fff5da;padding:5px;"><font color="#803000"><span id="defDisplay"></span></font></td>
+        </tr>
+    </table>
+    <hr>
+    <table class="vis" border="1" style="width:100%;background-color:#F4E4BC;border-color:#ecd7ac">
+        <tr id="settingPriorityTitle" style="text-align:center;" class="sophHeader">
+            <td colspan="2" style="text-align:center;"><center style="margin:10px"><font color="#803000">Qual configuração?</font></center></td>
+        </tr>
+        <tr id="settingPriorityHeader" style="text-align:center;" class="sophHeader">
+            <td style="text-align:center;width:50%;padding:5px;" title="Distribui tropas igualmente entre categorias"><font color="#803000">Balanceado entre categorias</font></td>
+            <td style="text-align:center;width:50%;padding:5px;" title="Prioriza categorias mais altas até atingir o tempo"><font color="#803000">Priorizar categorias altas</font></td>
+        </tr>
+        <tr id="settingPriority" style="text-align:center;background-color:#fff5da;">
+            <td style="text-align:center;padding:5px;"><input type="radio" ID="settingPriorityBalanced" name="prio"></td>
+            <td style="text-align:center;padding:5px;"><input type="radio" ID="settingPriorityPriority" name="prio"></td>
+        </tr>
+        <tr style="text-align:center;background-color:#fff5da;">
+            <td style="text-align:center;padding:5px;"><font color="#803000">Configurações com erro?</font></td>
+            <td style="text-align:center;padding:5px;"><center><input type="button" class="btn btnSophie" id="reset" onclick="resetSettings()" value="Redefinir configurações"></center></td>
+        </tr>
+    </table>
+    <hr>
+    <center><input type="button" class="btn btnSophie" id="sendMass" onclick="readyToSend()" value="${langShinko[5]}"></center>
+    <hr>
+    <center><img id="sophieImg" class="tooltip-delayed" title="Sophie -Shinko to Kuma-" src="https://dl.dropboxusercontent.com/s/bxoyga8wa6yuuz4/sophie2.gif" style="cursor:help;position:relative"></center>
+    <br>
+    <center><p><font color="#803000">${langShinko[6]} </font><a href="https://shinko-to-kuma.my-free.website/" style="text-shadow:-1px -1px 0 #803000,1px -1px 0 #803000,-1px 1px 0 #803000,1px 1px 0 #803000;" title="Sophie profile" target="_blank">Sophie "Shinko to Kuma"</a></p></center>
+</div>`;
+$(".maincell").eq(0).prepend(html);
+$("#mobileContent").eq(0).prepend(html);
+if (game_data.locale === "ar_AE") {
+    $("#sophieImg").attr("src", "https://media2.giphy.com/media/qYr8p3Dzbet5S/giphy.gif");
+}
+if (!is_mobile) {
+    $("#massScavengeSophie").css("position", "fixed");
+    $("#massScavengeSophie").draggable();
+}
+$("#offDisplay")[0].innerText = fancyTimeFormat(runTimes.off * 3600);
+$("#defDisplay")[0].innerText = fancyTimeFormat(runTimes.def * 3600);
+if (tempElementSelection === "Date") {
+    $(`#timeSelectorDate`).prop("checked", true);
+    selectType("Date");
+    updateTimers();
+} else {
+    $(`#timeSelectorHours`).prop("checked", true);
+    selectType("Hours");
+    updateTimers();
+}
+$("#offDay")[0].addEventListener("input", updateTimers, false);
+$("#defDay")[0].addEventListener("input", updateTimers, false);
+$("#offTime")[0].addEventListener("input", updateTimers, false);
+$("#defTime")[0].addEventListener("input", updateTimers, false);
+$(".runTime_off")[0].addEventListener("input", updateTimers, false);
+$(".runTime_def")[0].addEventListener("input", updateTimers, false);
+$("#timeSelectorDate")[0].addEventListener("input", () => { selectType('Date'); updateTimers(); }, false);
+$("#timeSelectorHours")[0].addEventListener("input", () => { selectType('Hours'); updateTimers(); }, false);
+
+// Populate unit checkboxes
+sendOrder.forEach(unit => {
+    $("#imgRow").eq(0).append(`
+    <td align="center" style="background-color:#fff5da;">
+        <table class="vis" border="1" style="width:100%;">
+            <thead></thead>
+            <tbody>
+                <tr>
+                    <td style="text-align:center;" class="sophHeader" title="Unidade: ${unit}"><img src="https://dsen.innogamescdn.com/asset/cf2959e7/graphic/unit/unit_${unit}.png" title="${unit}" alt="" class=""></td>
+                </tr>
+                <tr>
+                    <td align="center" style="background-color:#fff5da;padding:5px;"><input type="checkbox" ID="${unit}" name="${unit}"></td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;" class="sophHeader"><font color="#803000">Reserva</font></td>
+                </tr>
+                <tr>
+                    <td align="center" style="background-color:#fff5da;padding:5px;"><input type="text" ID="${unit}Backup" name="${unit}" value="${keepHome[unit]}" size="5"></td>
+                </tr>
+            </tbody>
+        </table>
+    </td>`);
+});
+$("#imgRow").sortable({
+    axis: "x",
+    revert: 100,
+    containment: "parent",
+    forceHelperSize: true,
+    delay: 100,
+    scroll: false
+}).disableSelection();
+if (prioritiseHighCat) {
+    $(`#settingPriorityPriority`).prop("checked", true);
+} else {
+    $(`#settingPriorityBalanced`).prop("checked", true);
+}
+enableCorrectTroopTypes();
+$("#sendMass").focus();
+
+const readyToSend = () => {
+    // Reset error highlights
+    $("#settingPriorityTitle, #categories").removeClass("error-highlight");
+    const errors = [];
+    if (!$("#settingPriorityPriority")[0].checked && !$("#settingPriorityBalanced")[0].checked) {
+        errors.push(langShinko[2] === translations.pt_BR[2] ? "Por favor, escolha como dividir as tropas!" : "You have not chosen how to split your troops!");
+        $("#settingPriorityTitle").addClass("error-highlight");
+    }
+    if (!$("#category1").is(":checked") && !$("#category2").is(":checked") && !$("#category3").is(":checked") && !$("#category4").is(":checked")) {
+        errors.push(langShinko[2] === translations.pt_BR[2] ? "Por favor, selecione pelo menos uma categoria!" : "You have not chosen any categories!");
+        $("#categories").addClass("error-highlight");
+    }
+    if (errors.length > 0) {
+        alert(errors.join("\n"));
+        return;
+    }
+    sendOrder.forEach(unit => {
+        troopTypeEnabled[unit] = $(`#${unit}`).is(":checked");
+        keepHome[unit] = $(`#${unit}Backup`).val();
+    });
+    enabledCategories = [
+        $("#category1").is(":checked"),
+        $("#category2").is(":checked"),
+        $("#category3").is(":checked"),
+        $("#category4").is(":checked")
+    ];
+    if ($("#timeSelectorDate")[0].checked) {
+        localStorage.setItem("timeElement", "Date");
+        time.off = (Date.parse($("#offDay").val().replace(/-/g, "/") + " " + $("#offTime").val()) - serverDate) / 1000 / 3600;
+        time.def = (Date.parse($("#defDay").val().replace(/-/g, "/") + " " + $("#defTime").val()) - serverDate) / 1000 / 3600;
+    } else {
+        localStorage.setItem("timeElement", "Hours");
+        time.off = $('.runTime_off').val();
+        time.def = $('.runTime_def').val();
+    }
+    if (time.off > 24 || time.def > 24) {
+        alert(langShinko[2] === translations.pt_BR[2] ? "A duração é maior que 24 horas!" : "Your runtime is higher than 24h!");
+        return;
+    }
+    prioritiseHighCat = $("#settingPriorityPriority")[0].checked;
+    sendOrder = Array.from($("#imgRow :checkbox")).map(cb => cb.name);
+    localStorage.setItem("troopTypeEnabled", JSON.stringify(troopTypeEnabled));
+    localStorage.setItem("keepHome", JSON.stringify(keepHome));
+    localStorage.setItem("categoryEnabled", JSON.stringify(enabledCategories));
+    localStorage.setItem("prioritiseHighCat", JSON.stringify(prioritiseHighCat));
+    localStorage.setItem("sendOrder", JSON.stringify(sendOrder));
+    localStorage.setItem("runTimes", JSON.stringify(time));
+    categoryEnabled = enabledCategories;
+    getData();
+};
+
+const sendGroup = (groupNr, premiumEnabled) => {
+    if (premiumEnabled && !confirm(langShinko[2] === translations.pt_BR[2] ? "Tem certeza que deseja usar premium? Isso pode custar muitos PP!" : "Are you sure you want to use premium? This can cost a lot of PP!")) {
+        premiumEnabled = false;
+    }
+    const tempSquads = premiumEnabled ? squads_premium[groupNr] : squads[groupNr];
+    $(':button[id^="sendMass"], :button[id^="sendMassPremium"]').prop('disabled', true);
+    TribalWars.post('scavenge_api', { ajaxaction: 'send_squads' }, { squad_requests: tempSquads }, () => {
+        UI.SuccessMessage(langShinko[2] === translations.pt_BR[2] ? "Grupo enviado com sucesso!" : "Group sent successfully");
+        setTimeout(() => {
+            $(`#sendRow${groupNr}`).remove();
+            $(':button[id^="sendMass"], :button[id^="sendMassPremium"]').prop('disabled', false);
+            $("#sendMass")[0].focus();
+        }, 200);
+    });
+};
+
+const calculateEstimatedLoot = (troopsAllowed, category) => {
+    const unitHaul = { spear: 25, sword: 15, axe: 10, archer: 10, light: 80, marcher: 50, heavy: 50, knight: 100 };
+    let total = 0;
+    for (let unit in troopsAllowed) {
+        total += troopsAllowed[unit] * unitHaul[unit];
+    }
+    return total * (category === 1 ? 0.1 : category === 2 ? 0.25 : category === 3 ? 0.5 : 0.75);
+};
+
+const calculateHaulCategories = data => {
+    if (!data.has_rally_point) {
+        console.log("No rally point");
+        return;
+    }
+    const troopsAllowed = {};
+    for (let key in troopTypeEnabled) {
+        if (troopTypeEnabled[key] && data.unit_counts_home[key] - keepHome[key] > 0) {
+            troopsAllowed[key] = data.unit_counts_home[key] - keepHome[key];
+        } else {
+            troopsAllowed[key] = 0;
+        }
+    }
+    const unitType = { spear: 'def', sword: 'def', axe: 'off', archer: 'def', light: 'off', marcher: 'off', heavy: 'def' };
+    const typeCount = { off: 0, def: 0 };
+    for (let prop in troopsAllowed) {
+        typeCount[unitType[prop]] += troopsAllowed[prop];
+    }
+    let totalLoot = 0;
+    for (let key in troopsAllowed) {
+        totalLoot += troopsAllowed[key] * (data.unit_carry_factor * { spear: 25, sword: 15, axe: 10, archer: 10, light: 80, marcher: 50, heavy: 50, knight: 100 }[key]);
+    }
+    estimatedLoot += totalLoot;
+    if (totalLoot === 0) {
+        return;
+    }
+    const haul = parseInt(((typeCount.off > typeCount.def ? time.off : time.def) * 3600 / duration_factor - duration_initial_seconds) ** (1 / duration_exponent) / 100) ** (1 / 2);
+    const haulCategoryRate = {};
+    haulCategoryRate[1] = data.options[1].is_locked || data.options[1].scavenging_squad ? 0 : haul / 0.1;
+    haulCategoryRate[2] = data.options[2].is_locked || data.options[2].scavenging_squad ? 0 : haul / 0.25;
+    haulCategoryRate[3] = data.options[3].is_locked || data.options[3].scavenging_squad ? 0 : haul / 0.50;
+    haulCategoryRate[4] = data.options[4].is_locked || data.options[4].scavenging_squad ? 0 : haul / 0.75;
+    for (let i = 0; i < enabledCategories.length; i++) {
+        if (!enabledCategories[i]) haulCategoryRate[i + 1] = 0;
+    }
+    const totalHaul = haulCategoryRate[1] + haulCategoryRate[2] + haulCategoryRate[3] + haulCategoryRate[4];
+    const unitsReadyForSend = calculateUnitsPerVillage(troopsAllowed, totalLoot, totalHaul, haulCategoryRate);
+    Object.keys(unitsReadyForSend).forEach(k => {
+        if (!data.options[parseInt(k) + 1].is_locked) {
+            const candidate_squad = { unit_counts: unitsReadyForSend[k], carry_max: 9999999999 };
+            squad_requests.push({ village_id: data.village_id, candidate_squad, option_id: parseInt(k) + 1, use_premium: false });
+            squad_requests_premium.push({ village_id: data.village_id, candidate_squad, option_id: parseInt(k) + 1, use_premium: true });
+        }
+    });
+};
+
+const enableCorrectTroopTypes = () => {
+    game_data.units.forEach(unit => {
+        if (!["militia", "snob", "ram", "catapult", "spy"].includes(unit)) {
+            if (troopTypeEnabled[unit]) $(`#${unit}`).prop("checked", true);
+        }
+    });
+    categoryEnabled.forEach((enabled, i) => {
+        if (enabled) $(`#category${i + 1}`).prop("checked", true);
+    });
+};
+
+const calculateUnitsPerVillage = (troopsAllowed, totalLoot, totalHaul, haulCategoryRate) => {
+    const unitHaul = { spear: 25, sword: 15, axe: 10, archer: 10, light: 80, marcher: 50, heavy: 50, knight: 100 };
+    const unitsReadyForSend = { 0: {}, 1: {}, 2: {}, 3: {} };
+    if (totalLoot > totalHaul) {
+        if (version !== "old") {
+            for (let j = 3; j >= 0; j--) {
+                let reach = haulCategoryRate[j + 1];
+                sendOrder.forEach(unit => {
+                    if (troopsAllowed[unit] && reach > 0) {
+                        const amountNeeded = Math.floor(reach / unitHaul[unit]);
+                        if (amountNeeded > troopsAllowed[unit]) {
+                            unitsReadyForSend[j][unit] = troopsAllowed[unit];
+                            reach -= troopsAllowed[unit] * unitHaul[unit];
+                            troopsAllowed[unit] = 0;
+                        } else {
+                            unitsReadyForSend[j][unit] = amountNeeded;
+                            reach = 0;
+                            troopsAllowed[unit] -= amountNeeded;
+                        }
+                    }
+                });
+            }
+        } else {
+            for (let j = 0; j < 4; j++) {
+                for (let key in troopsAllowed) {
+                    unitsReadyForSend[j][key] = Math.floor((haulCategoryRate[j + 1] * (troopsAllowed[key] / totalLoot)));
+                }
+            }
+        }
+    } else {
+        let troopNumber = Object.values(troopsAllowed).reduce((sum, val) => sum + val, 0);
+        if (!prioritiseHighCat && troopNumber > 130) {
+            for (let j = 0; j < 4; j++) {
+                for (let key in troopsAllowed) {
+                    unitsReadyForSend[j][key] = Math.floor((totalLoot / totalHaul * haulCategoryRate[j + 1]) * (troopsAllowed[key] / totalLoot));
+                }
+            }
+        } else {
+            for (let j = 3; j >= 0; j--) {
+                let reach = haulCategoryRate[j + 1];
+                sendOrder.forEach(unit => {
+                    if (troopsAllowed[unit] && reach > 0) {
+                        const amountNeeded = Math.floor(reach / unitHaul[unit]);
+                        if (amountNeeded > troopsAllowed[unit]) {
+                            unitsReadyForSend[j][unit] = troopsAllowed[unit];
+                            reach -= troopsAllowed[unit] * unitHaul[unit];
+                            troopsAllowed[unit] = 0;
+                        } else {
+                            unitsReadyForSend[j][unit] = amountNeeded;
+                            reach = 0;
+                            troopsAllowed[unit] -= amountNeeded;
+                        }
+                    }
+                });
+            }
+        }
+    }
+    return unitsReadyForSend;
+};
+
+const resetSettings = () => {
+    if (confirm(langShinko[2] === translations.pt_BR[2] ? "Tem certeza que deseja redefinir todas as configurações?" : "Are you sure you want to reset all settings?")) {
+        ["troopTypeEnabled", "categoryEnabled", "prioritiseHighCat", "sendOrder", "runTimes", "keepHome"].forEach(item => localStorage.removeItem(item));
+        UI.BanneredRewardMessage(langShinko[2] === translations.pt_BR[2] ? "Configurações redefinidas!" : "Settings reset");
+        window.location.reload();
+    }
+};
+
+const closeWindow = title => $("#" + title).remove();
+
+const settings = () => alert(langShinko[2] === translations.pt_BR[2] ? "Configurações avançadas em breve!" : "Advanced settings coming soon!");
+
+const zeroPadded = val => val >= 10 ? val : '0' + val;
+
+const setTimeToField = runtimeType => {
+    const d = new Date(Date.parse(new Date(serverDate)) + runtimeType * 1000 * 3600);
+    return `${zeroPadded(d.getHours())}:${zeroPadded(d.getMinutes())}`;
+};
+
+const setDayToField = runtimeType => {
+    const d = new Date(Date.parse(new Date(serverDate)) + runtimeType * 1000 * 3600);
+    return `${d.getFullYear()}-${zeroPadded(d.getMonth() + 1)}-${zeroPadded(d.getDate())}`;
+};
+
+const fancyTimeFormat = time => {
+    if (time < 0) {
+        return langShinko[2] === translations.pt_BR[2] ? "O tempo está no passado!" : "Time is in the past!";
+    }
+    const hrs = ~~(time / 3600);
+    const mins = ~~((time % 3600) / 60);
+    const secs = ~~time % 60;
+    let ret = langShinko[2] === translations.pt_BR[2] ? "Duração máx: " : "Max duration: ";
+    if (hrs > 0) {
+        ret += hrs + ":" + (mins < 10 ? "0" : "");
+    } else {
+        ret += "0:" + (mins < 10 ? "0" : "");
+    }
+    ret += mins + ":" + (secs < 10 ? "0" : "") + secs;
+    return ret;
+};
+
+const updateTimers = () => {
+    if ($("#timeSelectorDate")[0].checked) {
+        $("#offDisplay")[0].innerText = fancyTimeFormat((Date.parse($("#offDay").val().replace(/-/g, "/") + " " + $("#offTime").val()) - serverDate) / 1000);
+        $("#defDisplay")[0].innerText = fancyTimeFormat((Date.parse($("#defDay").val().replace(/-/g, "/") + " " + $("#defTime").val()) - serverDate) / 1000);
+    } else {
+        $("#offDisplay")[0].innerText = fancyTimeFormat($(".runTime_off").val() * 3600);
+        $("#defDisplay")[0].innerText = fancyTimeFormat($(".runTime_def").val() * 3600);
+    }
+};
+
+const selectType = type => {
+    const disableDate = type === "Hours";
+    $("#offDay, #defDay, #offTime, #defTime").prop("disabled", disableDate);
+    $(".runTime_off, .runTime_def").prop("disabled", !disableDate);
+};
