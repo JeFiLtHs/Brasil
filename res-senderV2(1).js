@@ -1,4 +1,3 @@
-javascript:
 var warehouseCapacity = [];
 var allWoodTotals = [];
 var allClayTotals = [];
@@ -10,12 +9,15 @@ var farmSpaceTotal = [];
 var villagesData = [];
 var allWoodObjects, allClayObjects, allIronObjects, allVillages;
 var totalsAndAverages = "";
-var data, totalWood = 0, totalStone = 0, totalIron = 0, resLimit = 0;
+var data, totalWood = 0, totalStone = 0, totalIron = 0, resLimit = 0, maxResourceLimit = 400000; // New variable for max resource limit
 var sendBack;
 var totalWoodSent = 0; totalStoneSent = 0; totalIronSent = 0;
-var woodAmountTarget = 28000; // Quantidade padrão de madeira
-var stoneAmountTarget = 30000; // Quantidade padrão de argila
-var ironAmountTarget = 25000; // Quantidade padrão de ferro
+if (typeof woodPercentage == 'undefined') {
+    woodPercentage = 28000 / 83000;
+    stonePercentage = 30000 / 83000;
+    ironPercentage = 25000 / 83000;
+}
+// percentages for coins, 83000 is how much all 3 is combined
 
 var backgroundColor = "#36393f";
 var borderColor = "#3e4147";
@@ -41,9 +43,7 @@ var langShinko = [
     "Iron",
     "Send resources",
     "Created by Sophie 'Shinko to Kuma'",
-    "Wood Amount", // Nova string para quantidade de madeira
-    "Clay Amount", // Nova string para quantidade de argila
-    "Iron Amount"  // Nova string para quantidade de ferro
+    "Max resources to send" // New translation for max resource limit
 ];
 if (game_data.locale == "en_DK") {
     langShinko = [
@@ -66,9 +66,7 @@ if (game_data.locale == "en_DK") {
         "Iron",
         "Send resources",
         "Created by Sophie 'Shinko to Kuma'",
-        "Wood Amount",
-        "Clay Amount",
-        "Iron Amount"
+        "Max resources to send"
     ];
 }
 if (game_data.locale == "el_GR") {
@@ -92,9 +90,7 @@ if (game_data.locale == "el_GR") {
         "Σίδερο",
         "Αποστολή πόρων",
         "Δημιουργήθηκε από την Sophie 'Shinko to Kuma'",
-        "Ποσότητα Ξύλου",
-        "Ποσότητα Πηλού",
-        "Ποσότητα Σιδήρου"
+        "Μέγιστοι πόροι για αποστολή"
     ];
 }
 if (game_data.locale == "nl_NL") {
@@ -118,9 +114,7 @@ if (game_data.locale == "nl_NL") {
         "Ijzer",
         "Verstuur grondstoffen",
         "Gemaakt door Sophie 'Shinko to Kuma'",
-        "Hoeveelheid Hout",
-        "Hoeveelheid Leem",
-        "Hoeveelheid Ijzer"
+        "Maximale grondstoffen om te sturen"
     ];
 }
 if (game_data.locale == "it_IT") {
@@ -144,9 +138,7 @@ if (game_data.locale == "it_IT") {
         "Ferro",
         "Manda risorse",
         "Creato da Sophie 'Shinko to Kuma'",
-        "Quantità Legno",
-        "Quantità Argilla",
-        "Quantità Ferro"
+        "Risorse massime da inviare"
     ];
 }
 if (game_data.locale == "pt_BR") {
@@ -170,9 +162,7 @@ if (game_data.locale == "pt_BR") {
         "Ferro",
         "Enviar recursos",
         "Criado por Sophie 'Shinko to Kuma'",
-        "Quantidade de Madeira",
-        "Quantidade de Argila",
-        "Quantidade de Ferro"
+        "Máximo de recursos para enviar"
     ];
 }
 
@@ -191,154 +181,133 @@ background-color: #202225;
 font-weight: bold;
 color: white;
 }
-</style>`;
+</style>`
 
-$("#contentContainer").eq(0).prepend(cssClassesSophie);
+$("#content administered").eq(0).prepend(cssClassesSophie);
 $("#mobileHeader").eq(0).prepend(cssClassesSophie);
 
-//check if we have a limit set for the res we want to keep in the villages
+// Check if we have a limit set for the res we want to keep in the villages and max resource limit
 if ("resLimit" in sessionStorage) {
-    //found resLimit in storage, get it
-    console.log('ok');
     resLimit = parseInt(sessionStorage.getItem("resLimit", resLimit));
-} else {
-    //create resLimit for first time in sessionstorage
+}
+else {
     sessionStorage.setItem("resLimit", resLimit);
-    console.log('not found');
+}
+if ("maxResourceLimit" in sessionStorage) {
+    maxResourceLimit = parseInt(sessionStorage.getItem("maxResourceLimit", maxResourceLimit));
+}
+else {
+    sessionStorage.setItem("maxResourceLimit", maxResourceLimit);
 }
 
-//check if we have resource amounts set
-if ("woodAmountTarget" in sessionStorage) {
-    woodAmountTarget = parseInt(sessionStorage.getItem("woodAmountTarget", woodAmountTarget));
-    stoneAmountTarget = parseInt(sessionStorage.getItem("stoneAmountTarget", stoneAmountTarget));
-    ironAmountTarget = parseInt(sessionStorage.getItem("ironAmountTarget", ironAmountTarget));
-} else {
-    sessionStorage.setItem("woodAmountTarget", woodAmountTarget);
-    sessionStorage.setItem("stoneAmountTarget", stoneAmountTarget);
-    sessionStorage.setItem("ironAmountTarget", ironAmountTarget);
-}
-
-//collect overview so we can get all the information necessary from all villages
+// Collect overview so we can get all the information necessary from all villages
 if (game_data.player.sitter > 0) {
     URLReq = `game.php?t=${game_data.player.id}&screen=overview_villages&mode=prod&page=-1&`;
-} else {
+}
+else {
     URLReq = "game.php?&screen=overview_villages&mode=prod&page=-1&";
 }
 $.get(URLReq, function () {
     console.log("Managed to grab the page");
-}).done(function (page) {
-    //different HTML for mobile devices, so have to separate
-    if ($("#mobileHeader")[0]) {
-        console.log("mobile");
-        allWoodObjects = $(page).find(".res.mwood,.warn_90.mwood,.warn.mwood");
-        allClayObjects = $(page).find(".res.mstone,.warn_90.mstone,.warn.mstone");
-        allIronObjects = $(page).find(".res.miron,.warn_90.miron,.warn.miron");
-        allWarehouses = $(page).find(".mheader.ressources");
-        allVillages = $(page).find(".quickedit-vn");
-        allFarms = $(page).find(".header.population");
-        allMerchants = $(page).find('a[href*="market"]');
-        //grabbing wood amounts
-        for (var i = 0; i < allWoodObjects.length; i++) {
-            n = allWoodObjects[i].textContent;
-            n = n.replace(/\./g, '').replace(',', '');
-            allWoodTotals.push(n);
+})
+    .done(function (page) {
+        if ($("#mobileHeader")[0]) {
+            console.log("mobile");
+            allWoodObjects = $(page).find(".res.mwood,.warn_90.mwood,.warn.mwood");
+            allClayObjects = $(page).find(".res.mstone,.warn_90.mstone,.warn.mstone");
+            allIronObjects = $(page).find(".res.miron,.warn_90.miron,.warn.miron");
+            allWarehouses = $(page).find(".mheader.ressources");
+            allVillages = $(page).find(".quickedit-vn");
+            allFarms = $(page).find(".header.population");
+            allMerchants = $(page).find('a[href*="market"]');
+            for (var i = 0; i < allWoodObjects.length; i++) {
+                n = allWoodObjects[i].textContent;
+                n = n.replace(/\./g, '').replace(',', '');
+                allWoodTotals.push(n);
+            };
+            for (var i = 0; i < allClayObjects.length; i++) {
+                n = allClayObjects[i].textContent;
+                n = n.replace(/\./g, '').replace(',', '');
+                allClayTotals.push(n);
+            };
+            for (var i = 0; i < allIronObjects.length; i++) {
+                n = allIronObjects[i].textContent;
+                n = n.replace(/\./g, '').replace(',', '');
+                allIronTotals.push(n);
+            };
+            for (var i = 0; i < allVillages.length; i++) {
+                warehouseCapacity.push(allWarehouses[i].parentElement.innerText);
+            };
+            for (var i = 0; i < allVillages.length; i++) {
+                for (var j = 1; j < allMerchants.length; j++) {
+                    availableMerchants.push(allMerchants[j].innerText);
+                }
+                totalMerchants.push("999");
+            };
+            for (var i = 0; i < allVillages.length; i++) {
+                farmSpaceUsed.push(allFarms[i].parentElement.innerText.match(/(\d*)\/(\d*)/)[1]);
+                farmSpaceTotal.push(allFarms[i].parentElement.innerText.match(/(\d*)\/(\d*)/)[2]);
+            };
         }
-        //grabbing clay amounts
-        for (var i = 0; i < allClayObjects.length; i++) {
-            n = allClayObjects[i].textContent;
-            n = n.replace(/\./g, '').replace(',', '');
-            allClayTotals.push(n);
+        else {
+            console.log("desktop");
+            allWoodObjects = $(page).find(".res.wood,.warn_90.wood,.warn.wood");
+            allClayObjects = $(page).find(".res.stone,.warn_90.stone,.warn.stone");
+            allIronObjects = $(page).find(".res.iron,.warn_90.iron,.warn.iron")
+            allVillages = $(page).find(".quickedit-vn");
+            for (var i = 0; i < allWoodObjects.length; i++) {
+                n = allWoodObjects[i].textContent;
+                n = n.replace(/\./g, '').replace(',', '');
+                allWoodTotals.push(n);
+            };
+            for (var i = 0; i < allClayObjects.length; i++) {
+                n = allClayObjects[i].textContent;
+                n = n.replace(/\./g, '').replace(',', '');
+                allClayTotals.push(n);
+            };
+            for (var i = 0; i < allIronObjects.length; i++) {
+                n = allIronObjects[i].textContent;
+                n = n.replace(/\./g, '').replace(',', '');
+                allIronTotals.push(n);
+            };
+            for (var i = 0; i < allVillages.length; i++) {
+                warehouseCapacity.push(allIronObjects[i].parentElement.nextElementSibling.innerHTML);
+            };
+            for (var i = 0; i < allVillages.length; i++) {
+                availableMerchants.push(allIronObjects[i].parentElement.nextElementSibling.nextElementSibling.innerText.match(/(\d*)\/(\d*)/)[1]);
+                totalMerchants.push(allIronObjects[i].parentElement.nextElementSibling.nextElementSibling.innerText.match(/(\d*)\/(\d*)/)[2]);
+            };
+            for (var i = 0; i < allVillages.length; i++) {
+                farmSpaceUsed.push(allIronObjects[i].parentElement.nextElementSibling.nextElementSibling.nextElementSibling.innerText.match(/(\d*)\/(\d*)/)[1]);
+                farmSpaceTotal.push(allIronObjects[i].parentElement.nextElementSibling.nextElementSibling.nextElementSibling.innerText.match(/(\d*)\/(\d*)/)[2]);
+            };
         }
-        //grabbing iron amounts
-        for (var i = 0; i < allIronObjects.length; i++) {
-            n = allIronObjects[i].textContent;
-            n = n.replace(/\./g, '').replace(',', '');
-            allIronTotals.push(n);
-        }
-        //grabbing warehouse capacity
-        for (var i = 0; i < allVillages.length; i++) {
-            warehouseCapacity.push(allWarehouses[i].parentElement.innerText);
-        }
-        //grabbing available merchants and total merchants
-        for (var i = 0; i < allVillages.length; i++) {
-            for (var j = 1; j < allMerchants.length; j++) {
-                availableMerchants.push(allMerchants[j].innerText);
-            }
-            totalMerchants.push("999");
-        }
-        //grabbing used farmspace and total farmspace
-        for (var i = 0; i < allVillages.length; i++) {
-            farmSpaceUsed.push(allFarms[i].parentElement.innerText.match(/(\d*)\/(\d*)/)[1]);
-            farmSpaceTotal.push(allFarms[i].parentElement.innerText.match(/(\d*)\/(\d*)/)[2]);
-        }
-    } else {
-        console.log("desktop");
-        allWoodObjects = $(page).find(".res.wood,.warn_90.wood,.warn.wood");
-        allClayObjects = $(page).find(".res.stone,.warn_90.stone,.warn.stone");
-        allIronObjects = $(page).find(".res.iron,.warn_90.iron,.warn.iron");
-        allVillages = $(page).find(".quickedit-vn");
-        //grabbing wood amounts
-        for (var i = 0; i < allWoodObjects.length; i++) {
-            n = allWoodObjects[i].textContent;
-            n = n.replace(/\./g, '').replace(',', '');
-            allWoodTotals.push(n);
-        }
-        //grabbing clay amounts
-        for (var i = 0; i < allClayObjects.length; i++) {
-            n = allClayObjects[i].textContent;
-            n = n.replace(/\./g, '').replace(',', '');
-            allClayTotals.push(n);
-        }
-        //grabbing iron amounts
-        for (var i = 0; i < allIronObjects.length; i++) {
-            n = allIronObjects[i].textContent;
-            n = n.replace(/\./g, '').replace(',', '');
-            allIronTotals.push(n);
-        }
-        //grabbing warehouse capacity
-        for (var i = 0; i < allVillages.length; i++) {
-            warehouseCapacity.push(allIronObjects[i].parentElement.nextElementSibling.innerHTML);
-        }
-        //grabbing available merchants and total merchants
-        for (var i = 0; i < allVillages.length; i++) {
-            availableMerchants.push(allIronObjects[i].parentElement.nextElementSibling.nextElementSibling.innerText.match(/(\d*)\/(\d*)/)[1]);
-            totalMerchants.push(allIronObjects[i].parentElement.nextElementSibling.nextElementSibling.innerText.match(/(\d*)\/(\d*)/)[2]);
-        }
-        //grabbing used farmspace and total farmspace
-        for (var i = 0; i < allVillages.length; i++) {
-            farmSpaceUsed.push(allIronObjects[i].parentElement.nextElementSibling.nextElementSibling.nextElementSibling.innerText.match(/(\d*)\/(\d*)/)[1]);
-            farmSpaceTotal.push(allIronObjects[i].parentElement.nextElementSibling.nextElementSibling.nextElementSibling.innerText.match(/(\d*)\/(\d*)/)[2]);
-        }
-    }
-    //making one big array to work with
-    for (var i = 0; i < allVillages.length; i++) {
-        villagesData.push({
-            "id": allVillages[i].dataset.id,
-            "url": allVillages[i].children[0].children[0].href,
-            "coord": allVillages[i].innerText.trim().match(/\d+\|\d+/)[0],
-            "name": allVillages[i].innerText.trim(),
-            "wood": allWoodTotals[i],
-            "stone": allClayTotals[i],
-            "iron": allIronTotals[i],
-            "availableMerchants": availableMerchants[i],
-            "totalMerchants": totalMerchants[i],
-            "warehouseCapacity": warehouseCapacity[i],
-            "farmSpaceUsed": farmSpaceUsed[i],
-            "farmSpaceTotal": farmSpaceTotal[i]
-        });
-    }
-});
 
-//ask user what coordinate they want to send resources to
+        for (var i = 0; i < allVillages.length; i++) {
+            villagesData.push({
+                "id": allVillages[i].dataset.id,
+                "url": allVillages[i].children[0].children[0].href,
+                "coord": allVillages[i].innerText.trim().match(/\d+\|\d+/)[0],
+                "name": allVillages[i].innerText.trim(),
+                "wood": allWoodTotals[i],
+                "stone": allClayTotals[i],
+                "iron": allIronTotals[i],
+                "availableMerchants": availableMerchants[i],
+                "totalMerchants": totalMerchants[i],
+                "warehouseCapacity": warehouseCapacity[i],
+                "farmSpaceUsed": farmSpaceUsed[i],
+                "farmSpaceTotal": farmSpaceTotal[i]
+            });
+        };
+    });
+
 askCoordinate();
 
 function createList() {
-    //if list is already made, delete both the older(possibly out of date list), with new one and readd the target and WH limit 
     if ($("#sendResources")[0]) {
         $("#sendResources")[0].remove();
         $("#resourceSender")[0].remove();
     }
-    //UI creation of the list
     var htmlString = `
                 <div id="resourceSender">
                     <table id="Settings" width="600">
@@ -347,8 +316,6 @@ function createList() {
                                 <td class="sophHeader">${langShinko[7]}</td>
                                 <td class="sophHeader">${langShinko[8]}</td>
                                 <td class="sophHeader">${langShinko[19]}</td>
-                                <td class="sophHeader">${langShinko[20]}</td>
-                                <td class="sophHeader">${langShinko[21]}</td>
                                 <td class="sophHeader"></td>
                                 <td class="sophHeader"></td>
                             </tr>
@@ -356,42 +323,34 @@ function createList() {
                         <tbody>
                         <tr>
                             <td class="sophRowA">
-                                <input type="text" id="coordinateTarget" name="coordinateTarget" size="20" margin="5" align=left>
+                                <input type="text" ID="coordinateTarget" name="coordinateTarget" size="20" margin="5" align=left>
                             </td>
                             <td class="sophRowA" align="right">
-                                <input type="text" id="resPercent" name="resPercent" size="1" align=right>%
+                                <input type="text" ID="resPercent" name="resPercent" size="1" align=right>%
                             </td>
-                            <td class="sophRowA">
-                                <input type="text" id="woodAmount" name="woodAmount" size="6" align=right>
-                            </td>
-                            <td class="sophRowA">
-                                <input type="text" id="stoneAmount" name="stoneAmount" size="6" align=right>
-                            </td>
-                            <td class="sophRowA">
-                                <input type="text" id="ironAmount" name="ironAmount" size="6" align=right>
+                            <td class="sophRowA" align="right">
+                                <input type="text" ID="maxResourceLimit" name="maxResourceLimit" size="6" align=right>
                             </td>
                             <td class="sophRowA" margin="5">
-                                <button type="button" id="button" class="btn-confirm-yes">${langShinko[2]}</button>
+                                <button type="button" ID="button" class="btn-confirm-yes" >${langShinko[2]}</button>
                             </td>
                             <td class="sophRowA">
-                                <button type="button" id="sendRes" class="btn" name="sendRes" onclick=reDo()>${langShinko[9]}</button>
+                                <button type="button" ID="sendRes" class="btn" name="sendRes" onclick=reDo()> ${langShinko[9]}</button>
                             </td>
                         </tr>
                         </tbody>
                     </table>
                     </br>
                 </div>`.trim();
-    //adding the target and WH limit DIV to the page
     uiDiv = document.createElement('div');
     uiDiv.innerHTML = htmlString;
 
-    //creating header for the actual list of sends
     htmlCode = `
             <div id="sendResources" border=0>
                 <table id="tableSend" width="100%">
                     <tbody id="appendHere">
                         <tr>
-                            <td class="sophHeader" colspan=7 width="550" style="text-align:center">${langShinko[10]}</td>
+                            <td class="sophHeader" colspan=7 width="550" style="text-align:center" >${langShinko[10]}</td>
                         </tr>
                         <tr>
                             <td class="sophHeader" width="25%" style="text-align:center">${langShinko[11]}</td>
@@ -409,80 +368,61 @@ function createList() {
             </div>
             `;
 
-    //append the page, mobileHeader will only work on mobile devices, and contentContainer won't, and vice versa, no need to add code to separate
     $("#mobileHeader").eq(0).append(htmlCode);
     $("#contentContainer").eq(0).prepend(htmlCode);
     $("#mobileHeader").prepend(uiDiv.firstChild);
     $("#contentContainer").prepend(uiDiv.firstChild);
     $("#resPercent")[0].value = resLimit;
     $("#coordinateTarget")[0].value = coordinate;
-    $("#woodAmount")[0].value = woodAmountTarget;
-    $("#stoneAmount")[0].value = stoneAmountTarget;
-    $("#ironAmount")[0].value = ironAmountTarget;
+    $("#maxResourceLimit")[0].value = maxResourceLimit;
 
-    // save coordinate and resource amounts functionality
     $('#button').click(function () {
         coordinate = $("#coordinateTarget")[0].value.match(/\d+\|\d+/)[0];
         sessionStorage.setItem("coordinate", coordinate);
-        resLimit = parseInt($("#resPercent")[0].value);
+        resLimit = $("#resPercent")[0].value;
         sessionStorage.setItem("resLimit", resLimit);
-        // Save resource amounts
-        var woodAmt = parseInt($("#woodAmount")[0].value) || 0;
-        var stoneAmt = parseInt($("#stoneAmount")[0].value) || 0;
-        var ironAmt = parseInt($("#ironAmount")[0].value) || 0;
-        var totalAmt = woodAmt + stoneAmt + ironAmt;
-        if (totalAmt > 0) {
-            woodAmountTarget = woodAmt;
-            stoneAmountTarget = stoneAmt;
-            ironAmountTarget = ironAmt;
-            sessionStorage.setItem("woodAmountTarget", woodAmountTarget);
-            sessionStorage.setItem("stoneAmountTarget", stoneAmountTarget);
-            sessionStorage.setItem("ironAmountTarget", ironAmountTarget);
-            reDo(); // Recalculate with new amounts
-        } else {
-            alert("At least one resource amount must be greater than 0!");
-        }
+        maxResourceLimit = $("#maxResourceLimit")[0].value;
+        sessionStorage.setItem("maxResourceLimit", maxResourceLimit);
     });
     listHTML = ``;
 
-    //adding sent so far
     $("#resourceSender").eq(0).prepend(`<table id="playerTarget" width="600">
     <tbody>
         <tr>
-            <td class="sophHeader" rowspan="3"><img src="${sendBack[2]}"></td>
+            <td class="sophHeader" rowspan="3"><img src="`+ sendBack[2] + `"></td>
             <td class="sophHeader">${langShinko[4]}:</td>
-            <td class="sophRowA">${sendBack[3]}</td>
+            <td class="sophRowA">`+ sendBack[3] + `</td>
             <td class="sophHeader"><span class="icon header wood"> </span></td>
             <td class="sophRowB" id="woodSent"></td>
         </tr>
         <tr>
             <td class="sophHeader">${langShinko[5]}:</td>
-            <td class="sophRowB">${sendBack[1]}</td>
+            <td class="sophRowB">`+ sendBack[1] + `</td>
             <td class="sophHeader"><span class="icon header stone"> </span></td>
             <td class="sophRowA" id="stoneSent"></td>
         </tr>
         <tr>
             <td class="sophHeader">${langShinko[6]}: </td>
-            <td class="sophRowA">${sendBack[4]}</td>
+            <td class="sophRowA">`+ sendBack[4] + `</td>
             <td class="sophHeader"><span class="icon header iron"> </span></td>
             <td class="sophRowB" id="ironSent"></td>
         </tr>
     </tbody>
 </table>`);
 
-    //creating table rows
     for (var i = 0; i < villagesData.length; i++) {
         if (i % 2 == 0) {
             tempRow = " id='" + i + "' class='sophRowB'";
-        } else {
+        }
+        else {
             tempRow = " id='" + i + "' class='sophRowA'";
         }
         res = calculateResAmounts(villagesData[i].wood, villagesData[i].stone, villagesData[i].iron, villagesData[i].warehouseCapacity, villagesData[i].availableMerchants);
         if (res.wood + res.stone + res.iron != 0 && villagesData[i].id != sendBack[0]) {
             listHTML += `
         <tr ${tempRow} height="40">
-            <td><a href="${villagesData[i].url}" style="color:#40D0E0;">${villagesData[i].name}</a></td>
-            <td><a href="" style="color:#40D0E0;">${sendBack[1]}</a></td>
+            <td><a href="${villagesData[i].url}" style="color:#40D0E0;">${villagesData[i].name} </a></td>
+            <td> <a href="" style="color:#40D0E0;">${sendBack[1]}</a> </td>
             <td>${checkDistance(sendBack[5], sendBack[6], villagesData[i].coord.substring(0, 3), villagesData[i].coord.substring(4, 7))}</td>
             <td width="50" style="text-align:center">${res.wood}<span class="icon header wood"> </span></td>
             <td width="50" style="text-align:center">${res.stone}<span class="icon header stone"> </span></td>
@@ -492,24 +432,21 @@ function createList() {
         }
     }
     $("#appendHere").eq(0).append(listHTML);
-    // redo the rows appearances cause some are omitted 
     sortTableTest(2);
     formatTable();
-
-    //put the focus on the first button in the list so the user can start cycling through them
     $(":button,#sendResources")[3].focus();
 }
 
 function sendResource(sourceID, targetID, woodAmount, stoneAmount, ironAmount, rowNr) {
     $(':button[id^="sendResources"]').prop('disabled', true);
-    setTimeout(function () {
-        $("#" + rowNr)[0].remove();
-        $(':button[id^="sendResources"]').prop('disabled', false);
-        $(":button,#sendResources")[3].focus();
-        if ($("#tableSend tr").length <= 2) {
+    setTimeout(function () { 
+        $("#" + rowNr)[0].remove(); 
+        $(':button[id^="sendResources"]').prop('disabled', false); 
+        $(":button,#sendResources")[3].focus(); 
+        if($("#tableSend tr").length<=2) {
             alert("Finished sending!");
-            if ($(".btn-pp").length > 0) {
-                $(".btn-pp").remove();
+            if($(".btn-pp").length>0) {
+                $(".btn-pp").remove(); 
             }
             throw Error("Done.");
         }
@@ -531,7 +468,6 @@ function sendResource(sourceID, targetID, woodAmount, stoneAmount, ironAmount, r
 }
 
 function numberWithCommas(x) {
-    // add . to make numbers more readable
     x = x.toString();
     var pattern = /(-?\d+)(\d{3})/;
     while (pattern.test(x))
@@ -540,7 +476,6 @@ function numberWithCommas(x) {
 }
 
 function checkDistance(x1, y1, x2, y2) {
-    //calculate distance from current village
     var a = x1 - x2;
     var b = y1 - y2;
     var distance = Math.round(Math.hypot(a, b));
@@ -548,7 +483,6 @@ function checkDistance(x1, y1, x2, y2) {
 }
 
 function askCoordinate() {
-    //ask for coordinate
     var content = `<div style=max-width:1000px;>
     <h2 class="popup_box_header">
        <center><u>
@@ -564,11 +498,11 @@ function askCoordinate() {
     </center>
     </p>
     <center> <table><tr><td><center>
-    <input type="text" id="coordinateTargetFirstTime" name="coordinateTargetFirstTime" size="20" margin="5" align=left></center></td></tr>
+    <input type="text" ID="coordinateTargetFirstTime" name="coordinateTargetFirstTime" size="20" margin="5" align=left></center></td></tr>
        <tr></tr>
        <tr><td><center><input type="button"
           class="btn evt-cancel-btn btn-confirm-yes" id="saveCoord"
-          value="${langShinko[2]}"> </center></td></tr>
+          value="${langShinko[2]}">&emsp;</center></td></tr>
           <tr></tr>
           </table>
     </center>
@@ -602,41 +536,42 @@ function askCoordinate() {
 
 function calculateResAmounts(wood, stone, iron, warehouse, merchants) {
     var merchantCarry = merchants * 1000;
-    //available to use resources in village and subtracting what we wanna leave behind
     leaveBehindRes = Math.floor(warehouse / 100 * resLimit);
-    var localWood = Math.max(0, wood - leaveBehindRes);
-    var localStone = Math.max(0, stone - leaveBehindRes);
-    var localIron = Math.max(0, iron - leaveBehindRes);
+    var localWood = Math.min(wood - leaveBehindRes, maxResourceLimit);
+    var localStone = Math.min(stone - leaveBehindRes, maxResourceLimit);
+    var localIron = Math.min(iron - leaveBehindRes, maxResourceLimit);
+    localWood = Math.max(0, localWood);
+    localStone = Math.max(0, localStone);
+    localIron = Math.max(0, localIron);
 
-    //use the target amounts specified by the user
-    var targetWood = woodAmountTarget;
-    var targetStone = stoneAmountTarget;
-    var targetIron = ironAmountTarget;
-    var totalTarget = targetWood + targetStone + targetIron;
+    merchantWood = (merchantCarry * woodPercentage);
+    merchantStone = (merchantCarry * stonePercentage);
+    merchantIron = (merchantCarry * ironPercentage);
 
-    //check if total target exceeds merchant capacity
     var perc = 1;
-    if (totalTarget > merchantCarry) {
-        perc = merchantCarry / totalTarget;
+    if (merchantWood > localWood) {
+        perc = localWood / merchantWood;
+        merchantWood = merchantWood * perc;
+        merchantStone = merchantStone * perc;
+        merchantIron = merchantIron * perc;
     }
-
-    //check if we have enough resources available
-    if (targetWood * perc > localWood) {
-        perc = localWood / targetWood;
+    if (merchantStone > localStone) {
+        perc = localStone / merchantStone;
+        merchantWood = merchantWood * perc;
+        merchantStone = merchantStone * perc;
+        merchantIron = merchantIron * perc;
     }
-    if (targetStone * perc > localStone) {
-        perc = Math.min(perc, localStone / targetStone);
+    if (merchantIron > localIron) {
+        perc = localIron / merchantIron;
+        merchantWood = merchantWood * perc;
+        merchantStone = merchantStone * perc;
+        merchantIron = merchantIron * perc;
     }
-    if (targetIron * perc > localIron) {
-        perc = Math.min(perc, localIron / targetIron);
-    }
-
-    //calculate final amounts to send
-    var merchantWood = Math.floor(targetWood * perc);
-    var merchantStone = Math.floor(targetStone * perc);
-    var merchantIron = Math.floor(targetIron * perc);
-
-    thisVillaData = { "wood": merchantWood, "stone": merchantStone, "iron": merchantIron };
+    thisVillaData = { 
+        "wood": Math.floor(merchantWood), 
+        "stone": Math.floor(merchantStone), 
+        "iron": Math.floor(merchantIron) 
+    };
     return thisVillaData;
 }
 
@@ -650,17 +585,17 @@ function compareDates(x) {
 }
 
 function coordToId(coordinate) {
-    //get village data from the coordinate we gained from the user
     if (game_data.player.sitter > 0) {
         sitterID = `game.php?t=${game_data.player.id}&screen=api&ajax=target_selection&input=${coordinate}&type=coord`;
-    } else {
+    }
+    else {
         sitterID = '/game.php?&screen=api&ajax=target_selection&input=' + coordinate + '&type=coord';
     }
     var data;
     $.get(sitterID, function (json) {
-        if (parseFloat(game_data.majorVersion) > 8.217) data = json;
-        else data = JSON.parse(json);
-    }).done(function () {
+        if(parseFloat(game_data.majorVersion)>8.217) data = json;
+        else data=JSON.parse(json);
+    }).done(function(){
         console.log(data);
         sendBack = [data.villages[0].id, data.villages[0].name, data.villages[0].image, data.villages[0].player_name, data.villages[0].points, data.villages[0].x, data.villages[0].y];
         createList();
@@ -672,12 +607,12 @@ function reDo() {
 }
 
 function formatTable() {
-    //reformat the rows so they are clean
     var tableRows = $("#table tr");
     for (var i = 1; i < tableRows.length; i++) {
         if (i % 2 == 0) {
             $("#table tr")[i].className = "sophRowB";
-        } else {
+        }
+        else {
             $("#table tr")[i].className = "sophRowA";
         }
     }
@@ -687,49 +622,31 @@ function sortTableTest(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
     table = document.getElementById("tableSend");
     switching = true;
-    // Set the sorting direction to ascending:
     dir = "asc";
-    /* Make a loop that will continue until
-    no switching has been done: */
     while (switching) {
-        // Start by saying: no switching is done:
         switching = false;
         rows = table.rows;
-        /* Loop through all table rows (except the
-        first, which contains table headers): */
         for (i = 2; i < (rows.length - 1); i++) {
-            // Start by saying there should be no switching:
             shouldSwitch = false;
-            /* Get the two elements you want to compare,
-            one from current row and one from the next: */
             x = rows[i].getElementsByTagName("td")[n];
             y = rows[i + 1].getElementsByTagName("td")[n];
-            /* Check if the two rows should switch place,
-            based on the direction, asc or desc: */
             if (dir == "asc") {
                 if (Number(x.innerHTML) > Number(y.innerHTML)) {
-                    // If so, mark as a switch and break the loop:
                     shouldSwitch = true;
                     break;
                 }
             } else if (dir == "desc") {
                 if (Number(x.innerHTML) < Number(y.innerHTML)) {
-                    // If so, mark as a switch and break the loop:
                     shouldSwitch = true;
                     break;
                 }
             }
         }
         if (shouldSwitch) {
-            /* If a switch has been marked, make the switch
-            and mark that a switch has been done: */
             rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
             switching = true;
-            // Each time a switch is done, increase this count by 1:
             switchcount++;
         } else {
-            /* If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again. */
             if (switchcount == 0 && dir == "asc") {
                 dir = "desc";
                 switching = true;
